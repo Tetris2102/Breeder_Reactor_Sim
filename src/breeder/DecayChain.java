@@ -95,6 +95,14 @@ public class DecayChain {
         return isotopesAtoms.get(index);
     }
 
+    public double getIsotopeAtoms(Isotope isotope) {
+        if (this.containsIsotope(isotope)) {
+            return this.getIsotopeAtoms(this.getIsotopeIndex(isotope));
+        }
+
+        return 0.0f;
+    }
+
     public ArrayList<Double> getIsotopeAtomsList() {
         return isotopesAtoms;
     }

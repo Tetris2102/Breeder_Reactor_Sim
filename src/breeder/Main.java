@@ -32,7 +32,7 @@ public class Main {
         Be9.setDensity(1.85f);  // g/cm^3
         Be9.setAlphaCapture(2.1e6f, 5.0e-25f, C10); // Example cross-section
         NeutronSource neutronSource = new NeutronSource(Pu238, Be9, 2.0e6f); // 2 MeV neutron energy
-        neutronSource.setAlphaSourceMass(1000.0f);  // 10 mg of Pu-238
+        neutronSource.setAlphaSourceMass(0.01f);  // 10 mg of Pu-238
         float neutronRate = neutronSource.getNeutronRate();
         System.out.println("Neutron rate from (α, n) reaction: " + neutronRate + " neutrons/s");
 
@@ -61,10 +61,12 @@ public class Main {
 
         // Breeder reactor simulation
         Breeder breeder = new Breeder(fuel, neutronSource);
+        double Th232Atoms = breeder.getFuel().getDecayChain(Th232).getIsotopeAtoms(0);
+        System.out.println(Th232Atoms + " atoms of Th-232 remaining.");
+        breeder.simulateNeutronIrradiation(1.0, 0.0f); // Simulate neutron irradiation for 1 minute with 1% escape probability
+        // Th232Atoms - breeder.getFuel().getIsotopeActivity(Th233)
+        DecayChain neutronCaptureChain = breeder.getFuel().getDecayChain(Th233);
+        System.out.println(neutronCaptureChain.getIsotopeAtoms(Th233) + " atoms transmutated.");
         System.out.println(breeder.getFuel().getDecayChain(Th232).getIsotopeAtoms(0) + " atoms of Th-232 remaining.");
-        breeder.simulateNeutronIrradiation(600.0, 0.0f); // Simulate neutron irradiation for 1 minute with 1% escape probability
-        System.out.println(breeder.getFuel().getIsotopeActivity(Ra228) + " atoms of Th-233 after neutron capture.");
-        System.out.println(breeder.getFuel().getDecayChain(Th232).getIsotopeAtoms(0) + " atoms of Th-232 remaining.");
-        System.out.println("Breeder reactor created " + breeder.getNeutronEmissionRate() + " neutrons in a second.");
     }
 }

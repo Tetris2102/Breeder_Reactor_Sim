@@ -50,7 +50,7 @@ public class Breeder {
         Isotope productIsotope = isotope.getNeutronCaptureProduct(neutronSource.getNeutronEnergy());
         if (productIsotope == null) return;
 
-        DecayChain productChain = fuel.getDecayChain(isotope);
+        DecayChain productChain = fuel.getDecayChain(productIsotope);
         if (productChain == null) {
             // If product is not in any chain, skip or handle (e.g., add to a new chain)
             return;
@@ -62,7 +62,6 @@ public class Breeder {
         // Add transformed atoms to the product chain
         double currentAtoms = productChain.getIsotopeAtoms(productIndex);
         productChain.setIsotopeMass(currentAtoms + atomsTransformed, productIndex);
-        System.out.println(productChain.getName()+ "1");
     }
 
     /**
