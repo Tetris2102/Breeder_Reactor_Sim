@@ -21,8 +21,9 @@ public class Isotope {
     public Isotope(String name, short massMolar) {  // Stable isotope by default
         this.name = name;
         this.massMolar = massMolar;
-        neutronCaptureXS = new TreeMap<>();
-        alphaCaptureXS = new TreeMap<>();
+        this.neutronCaptureXS = new TreeMap<>();
+        this.alphaCaptureXS = new TreeMap<>();
+        this.fissionXS = new TreeMap<>();
     }
 
     public void setDecayProperties(float halfLife, Isotope decayIsotope, DecayType decayType, float decayEnergy) {

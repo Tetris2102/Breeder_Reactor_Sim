@@ -3,7 +3,7 @@ import java.util.ArrayList;
 
 public class DecayChain {
     private final double AVOGADRO = 6.022e23; // Avogadro's number
-    private final ArrayList<Isotope> decayChain;
+    private final ArrayList<Isotope> decayChain;  // Stores *references* to Isotope objects
     private ArrayList<Double> isotopesAtoms;  // Atoms of each isotope
     private String name;
 
@@ -24,11 +24,16 @@ public class DecayChain {
         this.isotopesAtoms.add(atoms);
     }
 
+    public void addIsotopeList(Isotope[] isotopes, double[] massesGrams) {
+        for (int i = 0; i < isotopes.length; i++) {
+            this.addIsotope(isotopes[i], massesGrams[i]);
+        }
+    }
+
     public void simulateDecay(double time) {  // time in seconds
         for (int i = 0; i < isotopesAtoms.size(); i++) {
-            double decayAmounts = isotopesAtoms.get(i) * Math.pow(0.5, -time / decayChain.get(i).getHalfLife());
-            double atoms = isotopesAtoms.get(i);
-            isotopesAtoms.set(i, atoms - decayAmounts); // Update the number of atoms
+            double remainingAtoms = isotopesAtoms.get(i) * Math.pow(0.5, time / decayChain.get(i).getHalfLife());
+            isotopesAtoms.set(i, remainingAtoms); // Update the number of atoms
         }
     }
 
@@ -64,9 +69,6 @@ public class DecayChain {
     }
 
     public Isotope getIsotope(int index) {
-        if (index < 0 || index >= decayChain.size()) {
-            throw new IndexOutOfBoundsException("Index out of bounds for decay chain.");
-        }
         return decayChain.get(index);
     }
 
@@ -114,18 +116,36 @@ public class DecayChain {
         this.isotopesAtoms = atoms;
     }
 
-    public double getIsotopeMass(int index) {
+    public double getIsotopeMassGrams(int index) {
         if (index < 0 || index >= isotopesAtoms.size()) {
             throw new IndexOutOfBoundsException("Index out of bounds for isotopes atoms.");
         }
         return isotopesAtoms.get(index) / AVOGADRO; // Convert atoms to grams
     }
 
-    public void setIsotopeMass(double atoms, int index) {
+    public double getIsotopeMassGrams(Isotope isotope) {
+        return this.getIsotopeMassGrams(this.getIsotopeIndex(isotope));
+    }
+
+    public double getIsotopeMassAtoms(Isotope isotope) {
+        return isotopesAtoms.get(this.getIsotopeIndex(isotope));
+    }
+
+    public void setIsotopeMassAtoms(double atoms, int index) {
         if (index < 0 || index >= isotopesAtoms.size()) {
             throw new IndexOutOfBoundsException("Index out of bounds for isotopes atoms.");
         }
         isotopesAtoms.set(index, atoms); // Set the number of atoms directly
+    }
+
+    public void setIsotopeMassAtoms(Isotope isotope, double atoms) {
+        int index = this.getIsotopeIndex(isotope);
+        isotopesAtoms.set(index, atoms);
+    }
+
+    public void setIsotopeMassGrams(Isotope isotope, double grams) {
+        int index = this.getIsotopeIndex(isotope);
+        isotopesAtoms.set(index, grams * AVOGADRO);
     }
 
     public ArrayList<Double> getIsotopeMassesGrams() {

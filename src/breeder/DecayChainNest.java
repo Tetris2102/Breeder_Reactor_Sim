@@ -39,6 +39,12 @@ public class DecayChainNest {
         }
     }
 
+    public void addDecayChainList(DecayChain[] decayChainList) {
+        for (DecayChain dcl : decayChainList) {
+            this.addDecayChain(dcl);
+        }
+    }
+
     public List<DecayChain> getDecayChains() {
         return decayChains;
     }
@@ -69,7 +75,7 @@ public class DecayChainNest {
         double totalActivity = 0.0;
         for (DecayChain chain : decayChains) {
             for (int i = 0; i < chain.getDecayChainLength(); i++) {
-                double mass = chain.getIsotopeMass(i);
+                double mass = chain.getIsotopeMassGrams(i);
                 totalActivity += chain.getIsotope(i).getActivityPerGram() * mass;
             }
         }
@@ -81,7 +87,7 @@ public class DecayChainNest {
         for (DecayChain chain : decayChains) {
             for (Isotope isotope : chain.getDecayChain()) {
                 if (isotope.getDecayType() == decayType) {
-                    double mass = chain.getIsotopeMass(chain.getIsotopeIndex(isotope));
+                    double mass = chain.getIsotopeMassGrams(chain.getIsotopeIndex(isotope));
                     totalActivity += isotope.getActivityPerGram() * mass;
                 }
             }
@@ -100,7 +106,7 @@ public class DecayChainNest {
         
         if (index == -1) return 0.0;
 
-        double mass = chain.getIsotopeMass(index);
+        double mass = chain.getIsotopeMassGrams(index);
         return isotope.getActivityPerGram() * mass;
     }
 }
