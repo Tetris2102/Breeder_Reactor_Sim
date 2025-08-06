@@ -13,8 +13,8 @@ public class Main {
         // System.out.println(Double.toString(myDecayChain.getIsotopeMassGrams(IsotopeLibrary.Sr90)));
         DecayChainNest myDCN = IsotopeLibrary.decayTree;
         DecayChain myDC = myDCN.getDecayChain(IsotopeLibrary.Cs137);
-        myDC.setIsotopeMassGrams(IsotopeLibrary.Cs137, 100.0f);
-        myDCN.simulateDecay(IsotopeLibrary.Cs137.getHalfLife());
+        myDC.setIsotopeMassGrams(IsotopeLibrary.Cs137, 10.0f);
+        myDCN.simulateDecay(3600 * 24 * 365 * 60);
         System.out.println("Cs-137: " + myDC.getIsotopeMassGrams(IsotopeLibrary.Cs137) + " g");
         System.out.println("Ba-137: " + myDC.getIsotopeMassGrams(IsotopeLibrary.Ba137) + " g");
     }

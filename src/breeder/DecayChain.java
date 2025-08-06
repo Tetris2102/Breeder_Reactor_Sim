@@ -37,10 +37,10 @@ public class DecayChain {
             double remainingAtoms = isotopesAtoms.get(i) * Math.pow(0.5, time / decayChain.get(i).getHalfLife());
             double decays = isotopesAtoms.get(i) - remainingAtoms;
             isotopesAtoms.set(i, remainingAtoms); // Update the number of atoms
-            try {
+            if (i < isotopesAtoms.size() - 1) {  // In case of last element
                 double nextAtoms = isotopesAtoms.get(i+1);
                 isotopesAtoms.set(i+1, nextAtoms + decays);
-            } catch (IndexOutOfBoundsException e) {}  // In case of last element
+            }
         }
     }
 
