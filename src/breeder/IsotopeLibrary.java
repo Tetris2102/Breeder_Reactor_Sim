@@ -1,10 +1,13 @@
 package breeder;
 
+// All data is mainly taken from ENDF/B-VIII.0 and IAEA Nuclear Data
+
 public class IsotopeLibrary {
     private static final float YEAR_TO_SECONDS = 365.25f * 24 * 3600;
     private static final float DAY_TO_SECONDS = 24 * 3600;
     private static final float HOUR_TO_SECONDS = 3600;
     private static final float MINUTE_TO_SECONDS = 60.0f;
+    private static final float MILLISECOND_TO_SECONDS = 1e-3f;
     private static final float MICROSECOND_TO_SECONDS = 1e-6f;
 
     // 1) Thorium 232 natural decay isotopes
@@ -51,6 +54,23 @@ public class IsotopeLibrary {
     public static final Isotope Cs135 = new Isotope("Cs-135", (short)135);
     public static final Isotope Ba135 = new Isotope("Ba-135", (short)135);  // Stable
 
+    public static final Isotope Sr99 = new Isotope("Sr-99", (short)99);
+    public static final Isotope Y99 = new Isotope("Y-99", (short)99);
+    public static final Isotope Zr99 = new Isotope("Zr-99", (short)99);
+    public static final Isotope Nb99 = new Isotope("Nb-99", (short)99);
+    public static final Isotope Mo99 = new Isotope("Mo-99", (short)99);
+    public static final Isotope Tc99m = new Isotope("Tc-99m", (short)99);
+    public static final Isotope Tc99 = new Isotope("Tc-99", (short)99);
+    public static final Isotope Ru99 = new Isotope("Ru-99", (short)99);  // Stable
+
+    public static final Isotope Xe143 = new Isotope("Xe-143", (short)143);
+    public static final Isotope Cs143 = new Isotope("Cs-143", (short)143);
+    public static final Isotope Ba143 = new Isotope("Ba-143", (short)143);
+    public static final Isotope La143 = new Isotope("La-143", (short)143);
+    public static final Isotope Ce143 = new Isotope("Ce-143", (short)143);
+    public static final Isotope Pr143 = new Isotope("Pr-143", (short)143);
+    public static final Isotope Nd143 = new Isotope("Nd-143", (short)143);  // Stable
+
     public static final Isotope Sr90 = new Isotope("Sr-90", (short)90);
     public static final Isotope Y90 = new Isotope("Y-90", (short)90);
     public static final Isotope Zr90 = new Isotope("Zr-90", (short)90);  // Stable
@@ -59,8 +79,32 @@ public class IsotopeLibrary {
     public static final Isotope Ba137m = new Isotope("Ba-137m", (short)137);
     public static final Isotope Ba137 = new Isotope("Ba-137", (short)137);  // Stable
 
+    public static final Isotope Rb97 = new Isotope("Rb-97", (short)97);
+    public static final Isotope Sr97 = new Isotope("Sr-97", (short)97);
+    public static final Isotope Y97 = new Isotope("Y-97", (short)97);
+    public static final Isotope Zr97 = new Isotope("Zr-97", (short)97);  // Stable
+
     public static final Isotope Zr93 = new Isotope("Zr-93", (short)93);
     public static final Isotope Nb93 = new Isotope("Nb-93", (short)93);  // Stable
+
+
+    public static final Isotope La135 = new Isotope("La-135", (short)135);
+    // Ba-135 already defined, stable
+
+    public static final Isotope Pd117 = new Isotope("Pd-117", (short)117);
+    public static final Isotope Ag117 = new Isotope("Ag-117", (short)117);
+    public static final Isotope Cd117 = new Isotope("Cd-117", (short)117);  // Stable
+
+    public static final Isotope Tc105 = new Isotope("Tc-105", (short)105);
+    public static final Isotope Mo105 = new Isotope("Mo-105", (short)105);
+    public static final Isotope Ru105 = new Isotope("Ru-105", (short)105);  // Stable
+
+    public static final Isotope I129 = new Isotope("I-129", (short)129);
+    public static final Isotope Xe129 = new Isotope("Xe-129", (short)129);  // Stable
+
+    public static final Isotope Ce144 = new Isotope("Ce-144", (short)144);
+    public static final Isotope Pr144 = new Isotope("Pr-144", (short)144);
+    public static final Isotope Nd144 = new Isotope("Nd-144", (short)144);  // Stable
 
 
     // 5) Radium 226 decay isotopes
@@ -107,6 +151,62 @@ public class IsotopeLibrary {
         // Th-232, U-233 and Th-229 already have decay properties set
         U234.setDecayProperties(2.455e5f * YEAR_TO_SECONDS, Th230, DecayType.ALPHA, 4.857f);
         Th230.setDecayProperties(7.538e4f * YEAR_TO_SECONDS, Ra226, DecayType.ALPHA, 4.770f);
+        // Ra-226 decay chain properties set in 5)
+
+        Xe135.setDecayProperties(9.14f * HOUR_TO_SECONDS, Cs135, DecayType.BETA, 1.160f);
+        Cs135.setDecayProperties(2.3e6f * YEAR_TO_SECONDS, Ba135, DecayType.BETA, 0.269f);
+        // Ba-135 is stable, no decay properties set
+
+        Sr99.setDecayProperties(0.269f, Y99, DecayType.BETA, 7.62f);
+        Y99.setDecayProperties(1.47f, Zr99, DecayType.BETA, 5.59f);
+        Zr99.setDecayProperties(2.1f, Nb99, DecayType.BETA, 2.81f);
+        Nb99.setDecayProperties(15.0f, Mo99, DecayType.BETA, 2.36f);
+        Mo99.setDecayProperties(65.94f * HOUR_TO_SECONDS, Tc99m, DecayType.BETA, 1.36f);
+        Tc99m.setDecayProperties(6.01f * HOUR_TO_SECONDS, Tc99, DecayType.GAMMA, 0.142f);
+        Tc99.setDecayProperties(2.11e5f * YEAR_TO_SECONDS, Ru99, DecayType.BETA, 0.294f);
+        // Ru99 is stable, no decay properties set
+
+        Xe143.setDecayProperties(0.511f, Cs143, DecayType.BETA, 9.24f);
+        Cs143.setDecayProperties(1.78f, Ba143, DecayType.BETA, 7.08f);
+        Ba143.setDecayProperties(14.5f, La143, DecayType.BETA, 3.21f);
+        La143.setDecayProperties(14.2f * MINUTE_TO_SECONDS, Ce143, DecayType.BETA, 2.06f);
+        Ce143.setDecayProperties(33.0f * HOUR_TO_SECONDS, Pr143, DecayType.BETA, 0.465f);
+        Pr143.setDecayProperties(13.57f * DAY_TO_SECONDS, Nd143, DecayType.BETA, 0.934f);
+        // Nd143 is stable, no decay properties set
+
+        Sr90.setDecayProperties(28.79f * YEAR_TO_SECONDS, Y90, DecayType.BETA, 0.546f);
+        Y90.setDecayProperties(64.0f * HOUR_TO_SECONDS, Zr90, DecayType.BETA, 2.280f);
+        // Zr-90 is stable, no decay properties set
+
+        Cs137.setDecayProperties(30.08f * YEAR_TO_SECONDS, Ba137m, DecayType.BETA, 1.176f);
+        Ba137m.setDecayProperties(2.552f * MINUTE_TO_SECONDS, Ba137, DecayType.GAMMA, 0.662f);
+        // Ba-137 is stable, no decay properties set
+
+        Zr93.setDecayProperties(1.53e6f * YEAR_TO_SECONDS, Nb93, DecayType.BETA, 0.091f);
+        // Nb-93 is stable, no decay properties set
+
+        Rb97.setDecayProperties(169.1f * MILLISECOND_TO_SECONDS, Sr97, DecayType.BETA, 8.3f);
+        Sr97.setDecayProperties(429.0f * MILLISECOND_TO_SECONDS, Y97, DecayType.BETA, 4.7f);
+        Y97.setDecayProperties(3.75f, Zr97, DecayType.BETA, 3.6f);
+        // Zr-97 is stable, no decay properties set
+
+        La135.setDecayProperties(19.5f * HOUR_TO_SECONDS, Ba135, DecayType.BETA, 1.066f);  // ENSDF
+        // Ba-135 is stable, no decay properties set
+
+        Pd117.setDecayProperties(19.3f * HOUR_TO_SECONDS, Ag117, DecayType.BETA, 1.42f);  // NNDC
+        Ag117.setDecayProperties(73.6f * YEAR_TO_SECONDS, Cd117, DecayType.BETA, 1.23f);  // 66% β⁻ branch
+        // Cd-117 is stable, no decay properties set
+
+        Tc105.setDecayProperties(7.6f * YEAR_TO_SECONDS, Mo105, DecayType.BETA, 3.72f);  // ENSDF
+        Mo105.setDecayProperties(35.6f * YEAR_TO_SECONDS, Ru105, DecayType.BETA, 2.03f); // ENSDF
+        // Ru-105 is stable, no decay properties set
+
+        I129.setDecayProperties(15.7e6f * YEAR_TO_SECONDS, Xe129, DecayType.BETA, 0.194f);  // IAEA
+        // Xe-129 is stable, no decay properties set
+
+        Ce144.setDecayProperties(284.9f * DAY_TO_SECONDS, Pr144, DecayType.BETA, 0.319f);  // ENSDF
+        Pr144.setDecayProperties(17.28f * MINUTE_TO_SECONDS, Nd144, DecayType.BETA, 3.0f); // ENSDF
+        // Nd-144 is practically stable (half-life of 2.29fe15 years), so no decay properties set
 
 
         // Decay properties for 5)
@@ -123,23 +223,51 @@ public class IsotopeLibrary {
         // Pb206 is stable, no decay properties set
 
         
-        // Neutron capture and fission cross-sections for 3)
-
+        // Neutron capture for 3)
         // Thermal neutrons (0.0253 eV)
-        Th232.setNeutronCapture(2.53e-8f, 7.4f, Th233);
-        U233.setNeutronCapture(2.53e-8f, 45.1f, U234);
-
-        Isotope[] fissionProductsU233_t1 = {Cs137, Zr93};  // Thermal fission products
-        U233.setFissionCapture(2.53e-8f, 531.2f, fissionProductsU233_t1);
-        Isotope[] fissionProductsU233_t2 = {Xe135, Sr90};
-        U233.setFissionCapture(2.53e-8f, 531.2f, fissionProductsU233_t2);
-
-        Th229.setNeutronCapture(2.53e-8f, 60.2f, Th230);
+        Th232.setNeutronCapture(2.53e-8f, 7.4f, Th233);      // σₜₕ = 7.4 b (Barns), ENDF/B-VIII.0
+        U233.setNeutronCapture(2.53e-8f, 45.1f, U234);       // σₜₕ = 45.1 b, ENDF/B-VIII.0
+        Th229.setNeutronCapture(2.53e-8f, 60.2f, Th230);     // σₜₕ ≈ 60.2 b (IAEA Nuclear Data)
 
         // Epithermal neutrons (1 eV - 1 keV)
-        Th232.setNeutronCapture(500.0f, 85.0f, Th233);
+        Th232.setNeutronCapture(500.0f, 85.0f, Th233);       // Resonance integral ~85 b (ENDF/B-VIII.0)
+        U233.setNeutronCapture(500.0f, 120.0f, U234);        // Resonance integral ~120 b (ENDF/B-VIII.0)
+        Th229.setNeutronCapture(500.0f, 150.0f, Th230);      // Estimated higher resonance absorption
 
-        Isotope[] fissionProductsU233_e1 = {Cs137, Zr93};  // Epithermal fission products
-        U233.setFissionCapture(500.0f, 275.0f, fissionProductsU233_e1);
+        // Fast neutrons (1 MeV)
+        Th232.setNeutronCapture(1.0e6f, 0.1f, Th233);        // σ_fast ≈ 0.1 b (ENDF/B-VIII.0)
+        U233.setNeutronCapture(1.0e6f, 0.5f, U234);          // σ_fast ≈ 0.5 b (ENDF/B-VIII.0)
+        Th229.setNeutronCapture(1.0e6f, 0.3f, Th230);        // Estimated σ_fast ≈ 0.3 b
+
+        // Neutron fission for 3)
+        // Thermal neutrons (0.0253 eV)
+        Isotope[] fissionProductsU233_t1 = {Cs137, Rb97};
+        U233.setFissionCapture(2.53e-8f, 531.2f, fissionProductsU233_t1, 0.062f);
+
+        Isotope[] fissionProductsU233_t2 = {Xe135, Sr99};
+        U233.setFissionCapture(2.53e-8f, 531.2f, fissionProductsU233_t2, 0.065f);
+
+        Isotope[] fissionProductsU233_t3 = {Mo99, La135};
+        U233.setFissionCapture(2.53e-8f, 531.2f, fissionProductsU233_t3, 0.061f);
+
+        // Epithermal neutrons (1 eV - 1 keV)
+        Isotope[] fissionProductsU233_e1 = {Cs137, Zr93};
+        U233.setFissionCapture(500.0f, 275.0f, fissionProductsU233_e1, 0.042f);
+
+        Isotope[] fissionProductsU233_e2 = {Xe143, Sr90};
+        U233.setFissionCapture(500.0f, 275.0f, fissionProductsU233_e2, 0.038f);
+
+        Isotope[] fissionProductsU233_e3 = {Pd117, Ag117};  // Symmetric fission becomes more likely
+        U233.setFissionCapture(500.0f, 275.0f, fissionProductsU233_e3, 0.035f);
+
+        // Fast neutrons (1 MeV)
+        Isotope[] fissionProductsU233_f1 = {Pd117, Ag117};
+        U233.setFissionCapture(1.0e6f, 2.5f, fissionProductsU233_f1, 0.035f);
+
+        Isotope[] fissionProductsU233_f2 = {Tc105, I129};
+        U233.setFissionCapture(1.0e6f, 2.5f, fissionProductsU233_f2, 0.030f);
+
+        Isotope[] fissionProductsU233_f3 = {Zr90, Ce144};  // Still some asymmetric fission
+        U233.setFissionCapture(1.0e6f, 2.5f, fissionProductsU233_f3, 0.025f);
     }
 }
