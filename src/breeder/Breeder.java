@@ -3,7 +3,7 @@ package breeder;
 public class Breeder {
     private final DecayChainNest fuel;
     private final NeutronSource neutronSource;
-    private float additionalNeutronsEmitted = 0.0f; // Additional neutrons emitted by fission
+    private final float additionalNeutronsEmitted = 0.0f; // Additional neutrons emitted by fission
 
     public Breeder(DecayChainNest fuel, NeutronSource neutronSource) {
         this.fuel = fuel;
@@ -44,7 +44,7 @@ public class Breeder {
         if (atomsTransformed <= 0) return;
 
         // Deduct transformed atoms from the parent chain
-        parentChain.setIsotopeMass(atoms - atomsTransformed, isotopeIndex);
+        parentChain.setIsotopeMassAtoms(atoms - atomsTransformed, isotopeIndex);
 
         // Get the product isotope and add it to its respective chain
         Isotope productIsotope = isotope.getNeutronCaptureProduct(neutronSource.getNeutronEnergy());
@@ -61,7 +61,7 @@ public class Breeder {
 
         // Add transformed atoms to the product chain
         double currentAtoms = productChain.getIsotopeAtoms(productIndex);
-        productChain.setIsotopeMass(currentAtoms + atomsTransformed, productIndex);
+        productChain.setIsotopeMassAtoms(currentAtoms + atomsTransformed, productIndex);
     }
 
     /**
@@ -101,7 +101,7 @@ public class Breeder {
 
         if (atomsTransformed <= 0) return;
 
-        parentChain.setIsotopeMass(atoms - atomsTransformed, isotopeIndex);
+        parentChain.setIsotopeMassAtoms(atoms - atomsTransformed, isotopeIndex);
 
         Isotope productIsotope = isotope.getAlphaCaptureProduct(isotope.getDecayEnergy());
         if (productIsotope == null) return;
@@ -113,7 +113,7 @@ public class Breeder {
         if (productIndex == -1) return;
 
         double currentAtoms = productChain.getIsotopeAtoms(productIndex);
-        productChain.setIsotopeMass(currentAtoms + atomsTransformed, productIndex);
+        productChain.setIsotopeMassAtoms(currentAtoms + atomsTransformed, productIndex);
     }
 
     /**
