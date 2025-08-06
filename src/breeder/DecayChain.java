@@ -30,17 +30,17 @@ public class DecayChain {
         }
     }
 
+    // Note: when simulating long periods of time with simulateDecay() and there are short-lived isotopes,
+    // e.g. Ba-137m in Cs-137 decay chain, their amount becomes 0.0 atoms due to large time step
     public void simulateDecay(double time) {  // time in seconds
         for (int i = 0; i < isotopesAtoms.size(); i++) {
             double remainingAtoms = isotopesAtoms.get(i) * Math.pow(0.5, time / decayChain.get(i).getHalfLife());
+            double decays = isotopesAtoms.get(i) - remainingAtoms;
             isotopesAtoms.set(i, remainingAtoms); // Update the number of atoms
-<<<<<<< Updated upstream
-=======
             if (i < isotopesAtoms.size() - 1) {  // In case of last element
                 double nextAtoms = isotopesAtoms.get(i+1);
                 isotopesAtoms.set(i+1, nextAtoms + decays);
             }
->>>>>>> Stashed changes
         }
     }
 
@@ -132,10 +132,6 @@ public class DecayChain {
 
     public double getIsotopeMassGrams(Isotope isotope) {
         return this.getIsotopeMassGrams(this.getIsotopeIndex(isotope));
-    }
-
-    public double getIsotopeMassAtoms(Isotope isotope) {
-        return isotopesAtoms.get(this.getIsotopeIndex(isotope));
     }
 
     public void setIsotopeMassAtoms(double atoms, int index) {

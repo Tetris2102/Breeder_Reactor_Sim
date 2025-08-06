@@ -14,9 +14,9 @@ public class Isotope {
     private DecayType decayType;  // ALPHA, BETA, GAMMA, NEUTRON
     private float decayEnergy;  // MeV
     private float density;  // g/cm^3
-    private TreeMap<Float, CaptureData> neutronCaptureXS;  // Neutron capture cross section, barns
-    private TreeMap<Float, CaptureData> alphaCaptureXS;  // Alpha capture cross section, barns
-    private TreeMap<Float, CaptureDatum> fissionXS;  // Fission cross section, barns
+    private final TreeMap<Float, CaptureData> neutronCaptureXS;  // Neutron capture cross section, barns
+    private final TreeMap<Float, CaptureData> alphaCaptureXS;  // Alpha capture cross section, barns
+    private final TreeMap<Float, CaptureDatum> fissionXS;  // Fission cross section, barns
 
     public Isotope(String name, short massMolar) {  // Stable isotope by default
         this.name = name;
