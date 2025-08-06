@@ -34,6 +34,13 @@ public class DecayChain {
         for (int i = 0; i < isotopesAtoms.size(); i++) {
             double remainingAtoms = isotopesAtoms.get(i) * Math.pow(0.5, time / decayChain.get(i).getHalfLife());
             isotopesAtoms.set(i, remainingAtoms); // Update the number of atoms
+<<<<<<< Updated upstream
+=======
+            if (i < isotopesAtoms.size() - 1) {  // In case of last element
+                double nextAtoms = isotopesAtoms.get(i+1);
+                isotopesAtoms.set(i+1, nextAtoms + decays);
+            }
+>>>>>>> Stashed changes
         }
     }
 
