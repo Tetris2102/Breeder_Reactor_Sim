@@ -20,7 +20,7 @@ public class DecayChain {
 
     public void addIsotope(Isotope isotope, double massGrams) {
         this.decayChain.add(isotope);
-        double atoms = massGrams * AVOGADRO;
+        double atoms = massGrams / isotope.getMassMolar() * AVOGADRO;
         this.isotopesAtoms.add(atoms);
     }
 
@@ -31,7 +31,8 @@ public class DecayChain {
     }
 
     // Note: when simulating long periods of time with simulateDecay() and there are short-lived isotopes,
-    // e.g. Ba-137m in Cs-137 decay chain, their amount becomes 0.0 atoms due to large time step
+    // e.g. Ba-137m in Cs-137 decay chain, their amount becomes 0.0 atoms due to large time step instead of
+    // stabilizing at a constant level
     public void simulateDecay(double time) {  // time in seconds
         for (int i = 0; i < isotopesAtoms.size(); i++) {
             double remainingAtoms = isotopesAtoms.get(i) * Math.pow(0.5, time / decayChain.get(i).getHalfLife());
@@ -41,6 +42,13 @@ public class DecayChain {
                 double nextAtoms = isotopesAtoms.get(i+1);
                 isotopesAtoms.set(i+1, nextAtoms + decays);
             }
+        }
+    }
+
+    public void simulateDecay(double time, double timeStep) {
+        int steps = (int)Math.ceil(time / timeStep);
+        for (int i = 0; i < steps; i++) {
+            this.simulateDecay(timeStep);
         }
     }
 
@@ -127,7 +135,7 @@ public class DecayChain {
         if (index < 0 || index >= isotopesAtoms.size()) {
             throw new IndexOutOfBoundsException("Index out of bounds for isotopes atoms.");
         }
-        return isotopesAtoms.get(index) / AVOGADRO; // Convert atoms to grams
+        return isotopesAtoms.get(index) / AVOGADRO * decayChain.get(index).getMassMolar(); // Convert atoms to grams
     }
 
     public double getIsotopeMassGrams(Isotope isotope) {
@@ -148,13 +156,14 @@ public class DecayChain {
 
     public void setIsotopeMassGrams(Isotope isotope, double grams) {
         int index = this.getIsotopeIndex(isotope);
-        isotopesAtoms.set(index, grams * AVOGADRO);
+        isotopesAtoms.set(index, grams / isotope.getMassMolar() * AVOGADRO);
     }
 
     public ArrayList<Double> getIsotopeMassesGrams() {
-        ArrayList<Double> isotopeMassesGrams = new ArrayList<>();
-        for (int i = 0; i < isotopesAtoms.size(); i++)
-            isotopeMassesGrams.set(i, isotopesAtoms.get(i) / AVOGADRO);
-        return isotopeMassesGrams;
+        ArrayList<Double> masses = new ArrayList<>();
+        for (int i = 0; i < isotopesAtoms.size(); i++) {
+            masses.add(isotopesAtoms.get(i) / AVOGADRO * decayChain.get(i).getMassMolar());
+        }
+        return masses;
     }
 }

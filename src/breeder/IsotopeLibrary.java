@@ -13,25 +13,38 @@ public abstract class IsotopeLibrary {
     // Decay tree combining all decay chains with all isotopes
     public static final DecayChainNest decayTree = new DecayChainNest();
 
-    // 1) Thorium 232 natural decay isotopes
+    // Pu-238 natural decay isotopes
+    public static final Isotope Pu238 = new Isotope("Pu-238", (short)238);
+    public static final Isotope U234 = new Isotope("U-234", (short)234);
+    // U-234 decay chain ...
+    public static final DecayChain Pu238NDChain = new DecayChain("Pu-238 Natural Decay Chain");
+    public static final Isotope[] Pu238NDIsotopeList = {Pu238, U234};
+
+    // Be-9 alpha capture isotopes
+    public static final Isotope Be9 = new Isotope("Be-9", (short)9);
+    public static final Isotope C12 = new Isotope("C-12", (short)12);  // Stable
+    public static final DecayChain Be9NCChain = new DecayChain("Be-9 Neutron Capture Chain");
+    public static final Isotope[] Be9NCIsotopeList = {Be9, C12};
+    // No need for DecayChain, since it's a direct (alpha, n) reaction
+
+    // Thorium 232 natural decay isotopes
     public static final Isotope Th232 = new Isotope("Th-232", (short)232);
     public static final Isotope Ra228 = new Isotope("Ra-228", (short)228);
     public static final Isotope Ac228 = new Isotope("Ac-228", (short)228);
     public static final Isotope Th228 = new Isotope("Th-228", (short)228);
     public static final Isotope Ra224 = new Isotope("Ra-224", (short)224);
     public static final Isotope Rn220 = new Isotope("Rn-220", (short)220);
-    // Po-216 skipped, very short half-life
+    public static final Isotope Po216 = new Isotope("Po-216", (short)216);
     public static final Isotope Pb212 = new Isotope("Pb-212", (short)212);
     public static final Isotope Bi212 = new Isotope("Bi-212", (short)212);
-    // Po-212 skipped, very short half-life
-    public static final Isotope Tl208 = new Isotope("Tl-208", (short)208);
+    public static final Isotope Po212 = new Isotope("Po-212", (short)212);
     public static final Isotope Pb208 = new Isotope("Pb-208", (short)208);  // Stable
 
     public static final DecayChain Th232NDChain = new DecayChain("Th-232 Natural Decay Chain");
-    public static final Isotope[] Th232NDIsotopeList = {Th232, Ra228, Ac228, Th228, Ra224, Rn220, Pb212, Bi212, Tl208, Pb208};
+    public static final Isotope[] Th232NDIsotopeList = {Th232, Ra228, Ac228, Th228, Ra224, Rn220, Po216, Pb212, Bi212, Po212, Pb208};
 
 
-    // 2) Thorium 232 neutron capture and corresponding decay isotopes
+    // Thorium 232 neutron capture and corresponding decay isotopes
     // Th-232
     public static final Isotope Th233 = new Isotope("Th-233", (short)233);
     public static final Isotope Pa233 = new Isotope("Pa-233", (short)233);
@@ -50,15 +63,16 @@ public abstract class IsotopeLibrary {
     public static final Isotope[] Th232NCIsotopeList = {Th233, Pa233, U233, Th229, Ra225, Ac225, Fr221, At217, Bi213, Po213, Pb209, Bi209};
 
 
-    // 3) Significant neutron capturing (or fission) isotopes from 1) and 2)
+    // Significant neutron capturing (or fission) isotopes from Th232NDChain and Th232NCChain
     // Th-232 - capture
     // U-233 - fission
     // Th-229 - capture
 
-    // 4) Neutron capture and fission products from 3) (+ corresponding decay isotopes)
+    // Neutron capture and fission products from Th-232, U-233 and Th-229
+    // neutron capture (+ corresponding decay isotopes)
     // Th-233
     // U-233 neutron capture chain:
-    public static final Isotope U234 = new Isotope("U-234", (short)234);
+    // U-234
     public static final Isotope Th230 = new Isotope("Th-230", (short)230);
     public static final Isotope Ra226 = new Isotope("Ra-226", (short)226);
     // Ra-226 decay chain declared below
@@ -146,7 +160,7 @@ public abstract class IsotopeLibrary {
     public static final Isotope[] Ce144NDIsotopeList = {Ce144, Pr144, Nd144};
 
 
-    // 5) Radium 226 decay isotopes
+    // Radium 226 decay isotopes
     // Ra-226
     public static final Isotope Rn222 = new Isotope("Rn-222", (short)222);
     public static final Isotope Po218 = new Isotope("Po-218", (short)218);
@@ -163,25 +177,46 @@ public abstract class IsotopeLibrary {
 
     // List of decay chains for decayTree
     // Array stores references to objects, so no need to update it later
-    public static final DecayChain[] decayChainList = {Th232NDChain, Th232NCChain, U233NCChain, Xe135NDChain, Sr99NDChain, Xe143NDChain, Sr90NDChain, Cs137NDChain,
+    public static final DecayChain[] decayChainList = {Pu238NDChain, Be9NCChain, Th232NDChain, Th232NCChain, U233NCChain, Xe135NDChain, Sr99NDChain, Xe143NDChain, Sr90NDChain, Cs137NDChain,
         Rb97NDChain, Zr93NDChain, La135NDChain, Pd117NDChain, Tc105NDChain, I129NDChain, Ce144NDChain, Ra226NDChain};
 
     static {
-        // Decay properties for 1)
+        // Decay properties for Pu238NDChain
+        Pu238.setDecayProperties(87.7f * YEAR_TO_SECONDS, U234, DecayType.ALPHA, 5.593f);
+        Pu238NDChain.addIsotopeList(Pu238NDIsotopeList, new double[Pu238NDIsotopeList.length]);
+
+        Pu238.setDensity(19.8f); // g/cm³
+
+        // Be-9 alpha capture properties (produces C-12 + neutron)
+        Be9.setAlphaCapture(5.0f, 0.1f, C12);  // 100 mb cross-section at ~5 MeV alpha energy
+        
+        // Higher energy alphas (~7 MeV - typical from Po-210)
+        Be9.setAlphaCapture(7.0f, 0.15f, C12);  
+        
+        // Lower energy alphas (~4 MeV)
+        Be9.setAlphaCapture(4.0f, 0.03f, C12);
+
+        // Decay properties for Be9NCChain
+        Be9NCChain.addIsotopeList(Be9NCIsotopeList, new double[Be9NCIsotopeList.length]);
+
+        Be9.setDensity(1.8f);  // g/cm³
+
+        // Decay properties for Th232NDChain
         Th232.setDecayProperties(1.405e10f * YEAR_TO_SECONDS, Ra228, DecayType.ALPHA, 4.081f);
         Ra228.setDecayProperties(5.75f * YEAR_TO_SECONDS, Ac228, DecayType.BETA, 0.046f);
         Ac228.setDecayProperties(6.15f * HOUR_TO_SECONDS, Th228, DecayType.BETA, 2.124f);
         Th228.setDecayProperties(1.912f * YEAR_TO_SECONDS, Ra224, DecayType.ALPHA, 5.520f);
         Ra224.setDecayProperties(3.632f * DAY_TO_SECONDS, Rn220, DecayType.ALPHA, 5.789f);
-        Rn220.setDecayProperties(55.6f, Pb212, DecayType.ALPHA, 6.404f);
+        Rn220.setDecayProperties(55.6f, Po216, DecayType.ALPHA, 6.404f);
+        Po216.setDecayProperties(145.0f * MILLISECOND_TO_SECONDS, Pb212, DecayType.ALPHA, 6.906f);
         Pb212.setDecayProperties(10.64f * HOUR_TO_SECONDS, Bi212, DecayType.BETA, 0.574f);
-        Bi212.setDecayProperties(60.55f * MINUTE_TO_SECONDS, Tl208, DecayType.ALPHA, 6.207f);
-        Tl208.setDecayProperties(3.053f * MINUTE_TO_SECONDS, Pb208, DecayType.BETA, 4.999f);
+        Bi212.setDecayProperties(60.55f * MINUTE_TO_SECONDS, Po212, DecayType.ALPHA, 6.207f);
+        Po212.setDecayProperties(0.299f * MICROSECOND_TO_SECONDS, Pb208, DecayType.ALPHA, 8.954f);
         // Pb208 is stable, no decay properties set
         Th232NDChain.addIsotopeList(Th232NDIsotopeList, new double[Th232NDIsotopeList.length]);  // All masses are 0.0 grams by default
 
 
-        // Decay properties for 2)
+        // Decay properties for Th232NCChain
         Th233.setDecayProperties(21.83f * MINUTE_TO_SECONDS, Pa233, DecayType.BETA, 1.245f);
         Pa233.setDecayProperties(26.975f * DAY_TO_SECONDS, U233, DecayType.BETA, 0.571f);
         U233.setDecayProperties(1.592e5f * YEAR_TO_SECONDS, Th229, DecayType.ALPHA, 4.909f);
@@ -195,7 +230,7 @@ public abstract class IsotopeLibrary {
         Th232NCChain.addIsotopeList(Th232NCIsotopeList, new double[Th232NCIsotopeList.length]);
 
 
-        // Decay properties for 4)
+        // Decay properties for Th-232, U-233 and Th-229 neutron capture products
         // Th-232, U-233 and Th-229 already have decay properties set
         U234.setDecayProperties(2.455e5f * YEAR_TO_SECONDS, Th230, DecayType.ALPHA, 4.857f);
         Th230.setDecayProperties(7.538e4f * YEAR_TO_SECONDS, Ra226, DecayType.ALPHA, 4.770f);
@@ -270,7 +305,7 @@ public abstract class IsotopeLibrary {
         Ce144NDChain.addIsotopeList(Ce144NDIsotopeList, new double[Ce144NDIsotopeList.length]);
 
 
-        // Decay properties for 5)
+        // Decay properties for Ra226NDChain
         Ra226.setDecayProperties(1.6e3f * YEAR_TO_SECONDS, Rn222, DecayType.ALPHA, 4.87f);
         Rn222.setDecayProperties(3.8235f * DAY_TO_SECONDS, Po218, DecayType.ALPHA, 5.59f);
         Po218.setDecayProperties(3.10f * MINUTE_TO_SECONDS, Pb214, DecayType.ALPHA, 6.115f);
@@ -287,19 +322,20 @@ public abstract class IsotopeLibrary {
         
         // Neutron capture for 3)
         // Thermal neutrons (0.0253 eV)
+        // Cross-section in barns
         Th232.setNeutronCapture(2.53e-8f, 7.4f, Th233);      // ENDF/B-VIII.0
         U233.setNeutronCapture(2.53e-8f, 45.1f, U234);       // ENDF/B-VIII.0
         Th229.setNeutronCapture(2.53e-8f, 60.2f, Th230);     // IAEA Nuclear Data
 
         // Epithermal neutrons (1 eV - 1 keV)
-        Th232.setNeutronCapture(500.0f, 85.0f, Th233);       // ENDF/B-VIII.0
-        U233.setNeutronCapture(500.0f, 120.0f, U234);        // ENDF/B-VIII.0
-        Th229.setNeutronCapture(500.0f, 150.0f, Th230);      // Estimated higher resonance absorption
+        Th232.setNeutronCapture(5.0e-4f, 85.0f, Th233);       // ENDF/B-VIII.0
+        U233.setNeutronCapture(5.0e-4f, 120.0f, U234);        // ENDF/B-VIII.0
+        Th229.setNeutronCapture(5.0e-4f, 150.0f, Th230);      // Estimated higher resonance absorption
 
         // Fast neutrons (1 MeV)
-        Th232.setNeutronCapture(1.0e6f, 0.1f, Th233);        // ENDF/B-VIII.0
-        U233.setNeutronCapture(1.0e6f, 0.5f, U234);          // ENDF/B-VIII.0
-        Th229.setNeutronCapture(1.0e6f, 0.3f, Th230);        // Estimated σ_fast ≈ 0.3 b
+        Th232.setNeutronCapture(1.0f, 0.1f, Th233);        // ENDF/B-VIII.0
+        U233.setNeutronCapture(1.0f, 0.5f, U234);          // ENDF/B-VIII.0
+        Th229.setNeutronCapture(1.0f, 0.3f, Th230);        // Estimated σ_fast ≈ 0.3 b
 
         // No need to update these isotopes, as DecayChain.decayChain stores references to them,
         // not their copies
@@ -317,23 +353,23 @@ public abstract class IsotopeLibrary {
 
         // Epithermal neutrons (1 eV - 1 keV)
         Isotope[] fissionProductsU233_e1 = {Cs137, Zr93};
-        U233.setFissionCapture(500.0f, 275.0f, fissionProductsU233_e1, 0.042f);
+        U233.setFissionCapture(5.0e-4f, 275.0f, fissionProductsU233_e1, 0.042f);
 
         Isotope[] fissionProductsU233_e2 = {Xe143, Sr90};
-        U233.setFissionCapture(500.0f, 275.0f, fissionProductsU233_e2, 0.038f);
+        U233.setFissionCapture(5.0e-4f, 275.0f, fissionProductsU233_e2, 0.038f);
 
         Isotope[] fissionProductsU233_e3 = {Pd117, Ag117};  // Symmetric fission becomes more likely
-        U233.setFissionCapture(500.0f, 275.0f, fissionProductsU233_e3, 0.035f);
+        U233.setFissionCapture(5.0e-4f, 275.0f, fissionProductsU233_e3, 0.035f);
 
         // Fast neutrons (1 MeV)
         Isotope[] fissionProductsU233_f1 = {Pd117, Ag117};
-        U233.setFissionCapture(1.0e6f, 2.5f, fissionProductsU233_f1, 0.035f);
+        U233.setFissionCapture(1.0f, 2.5f, fissionProductsU233_f1, 0.035f);
 
         Isotope[] fissionProductsU233_f2 = {Tc105, I129};
-        U233.setFissionCapture(1.0e6f, 2.5f, fissionProductsU233_f2, 0.030f);
+        U233.setFissionCapture(1.0f, 2.5f, fissionProductsU233_f2, 0.030f);
 
         Isotope[] fissionProductsU233_f3 = {Zr90, Ce144};  // Still some asymmetric fission
-        U233.setFissionCapture(1.0e6f, 2.5f, fissionProductsU233_f3, 0.025f);
+        U233.setFissionCapture(1.0f, 2.5f, fissionProductsU233_f3, 0.025f);
 
         decayTree.addDecayChainList(decayChainList);
     }

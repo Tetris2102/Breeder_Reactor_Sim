@@ -3,11 +3,29 @@ package breeder;
 public class Breeder {
     private final DecayChainNest fuel;
     private final NeutronSource neutronSource;
-    private final float additionalNeutronsEmitted = 0.0f; // Additional neutrons emitted by fission
-
-    public Breeder(DecayChainNest fuel, NeutronSource neutronSource) {
+    private double neutronPopulation; // Current neutron population in the reactor
+    private double alphaPopulation;   // Current alpha particle population from decays
+    
+    // Reactor physics parameters
+    private final float neutronEscapeProbability; // Probability of neutron escaping per second
+    private final float alphaEscapeProbability; // Probability of alpha escaping per second
+    
+    public Breeder(DecayChainNest fuel, NeutronSource neutronSource, 
+                  float initialNeutrons, float neutronEscapeProbability, float alphaEscapeProbability) {
+        if (fuel == null || neutronSource == null) {
+            throw new IllegalArgumentException("Fuel and neutron source cannot be null");
+        }
+        if (neutronEscapeProbability < 0 || neutronEscapeProbability > 1 ||
+            alphaEscapeProbability < 0 || alphaEscapeProbability > 1) {
+            throw new IllegalArgumentException("Escape probabilities must be between 0 and 1");
+        }
+        
         this.fuel = fuel;
         this.neutronSource = neutronSource;
+        this.neutronPopulation = Math.max(initialNeutrons, 0);
+        this.neutronEscapeProbability = neutronEscapeProbability;
+        this.alphaEscapeProbability = alphaEscapeProbability;
+        this.alphaPopulation = 0;
     }
 
     public DecayChainNest getFuel() {
@@ -18,76 +36,102 @@ public class Breeder {
         return neutronSource;
     }
 
+    public double getNeutronPopulation() {
+        return neutronPopulation;
+    }
+
+    public double getAlphaPopulation() {
+        return alphaPopulation;
+    }
+
     /**
-     * Simulate neutron capture on an isotope, transitioning it to another chain if needed.
-     * @param isotope The target isotope.
-     * @param time Time interval (seconds).
-     * @param escapeProbability Probability of neutron escaping after time seconds.
+     * Update particle populations based on source and decay rates
      */
-    public void simulateNeutronCapture(Isotope isotope, double time, float escapeProbability) {
-        if (isotope == null) return;
+    public void updateParticlePopulations(double timeStep) {
+        if (timeStep <= 0) return;
+        
+        // Add new neutrons from the neutron source
+        double newNeutrons = neutronSource.getNeutronRate() * timeStep;
+        neutronPopulation += newNeutrons;
+        
+        // Add alpha particles from alpha decays in fuel
+        double newAlphas = fuel.getActivityByDecay(DecayType.ALPHA) * timeStep;
+        alphaPopulation += newAlphas;
+        
+        // Remove escaped neutrons (exponential decay model)
+        double neutronEscapeLoss = neutronPopulation * neutronEscapeProbability * timeStep;
+        neutronPopulation = Math.max(0, neutronPopulation - neutronEscapeLoss);
+        
+        // Remove escaped alphas (exponential decay model)
+        double alphaEscapeLoss = alphaPopulation * alphaEscapeProbability * timeStep;
+        alphaPopulation = Math.max(0, alphaPopulation - alphaEscapeLoss);
+    }
+
+    /**
+     * Simulate neutron capture on an isotope
+     */
+    public void simulateNeutronCapture(Isotope isotope, double timeStep) {
+        if (isotope == null || timeStep <= 0) return;
 
         float xs = isotope.getNeutronCaptureXS(neutronSource.getNeutronEnergy());
         if (xs <= 0) return; // No capture possible
 
-        // Calculate reaction rate (atoms transformed per second)
         DecayChain parentChain = fuel.getDecayChain(isotope);
         if (parentChain == null) return;
 
         int isotopeIndex = parentChain.getIsotopeIndex(isotope);
         if (isotopeIndex == -1) return;
 
+        // Calculate reaction rate based on current neutron population
         double atoms = parentChain.getIsotopeAtoms(isotopeIndex);
-        double reactionRate = atoms * xs * neutronSource.getNeutronRate() * (1.0f - escapeProbability); // Reactions per second
-        double atomsTransformed = reactionRate * time;
+        double reactionRate = atoms * xs * 1e-24 * neutronPopulation; // Reactions per second
+        double atomsTransformed = reactionRate * timeStep;
 
-        if (atomsTransformed <= 0) return;
+        if (atomsTransformed <= 0 || atomsTransformed > atoms) return;
 
-        // Deduct transformed atoms from the parent chain
+        // Deduct transformed atoms from parent chain
         parentChain.setIsotopeMassAtoms(atoms - atomsTransformed, isotopeIndex);
 
-        // Get the product isotope and add it to its respective chain
+        // Get product isotope and add to its chain
         Isotope productIsotope = isotope.getNeutronCaptureProduct(neutronSource.getNeutronEnergy());
         if (productIsotope == null) return;
 
         DecayChain productChain = fuel.getDecayChain(productIsotope);
-        if (productChain == null) {
-            // If product is not in any chain, skip or handle (e.g., add to a new chain)
-            return;
-        }
+        if (productChain == null) return;
 
         int productIndex = productChain.getIsotopeIndex(productIsotope);
         if (productIndex == -1) return;
 
-        // Add transformed atoms to the product chain
         double currentAtoms = productChain.getIsotopeAtoms(productIndex);
         productChain.setIsotopeMassAtoms(currentAtoms + atomsTransformed, productIndex);
+        
+        // Reduce neutron population by number of captures
+        neutronPopulation = Math.max(0, neutronPopulation - atomsTransformed);
     }
 
     /**
-     * Simulate neutron irradiation on the entire fuel, capturing neutrons and transforming isotopes.
-     * @param time Time interval for the simulation (seconds).
-     * @param escapeProbability Probability of neutron escaping without capture.
+     * Simulate neutron irradiation on the entire fuel
      */
-    public void simulateNeutronIrradiation(double time, float escapeProbability) {
+    public void simulateNeutronIrradiation(double timeStep) {
+        if (timeStep <= 0) return;
+        
         for (DecayChain chain : fuel.getDecayChains()) {
             for (Isotope isotope : chain.getDecayChain()) {
-                if (isotope.getNeutronCaptureXS(neutronSource.getNeutronEnergy()) > 0)
-                    simulateNeutronCapture(isotope, time, escapeProbability);
+                if (isotope.getNeutronCaptureXS(neutronSource.getNeutronEnergy()) > 0) {
+                    simulateNeutronCapture(isotope, timeStep);
+                }
             }
         }
     }
 
     /**
-     * Simulate alpha capture on an isotope, transitioning it to another chain if needed.
-     * @param isotope The target isotope.
-     * @param time Time interval (seconds).
+     * Simulate alpha capture on an isotope
      */
-    public void simulateAlphaCapture(Isotope isotope, double time) {
-        if (isotope == null) return;
+    public void simulateAlphaCapture(Isotope isotope, double timeStep) {
+        if (isotope == null || timeStep <= 0) return;
 
         float xs = isotope.getAlphaCaptureXS(neutronSource.getAlphaSource().getDecayEnergy());
-        if (xs <= 0) return; // No capture possible
+        if (xs <= 0) return;
 
         DecayChain parentChain = fuel.getDecayChain(isotope);
         if (parentChain == null) return;
@@ -95,45 +139,130 @@ public class Breeder {
         int isotopeIndex = parentChain.getIsotopeIndex(isotope);
         if (isotopeIndex == -1) return;
 
+        // Calculate reaction rate based on current alpha population
         double atoms = parentChain.getIsotopeAtoms(isotopeIndex);
-        double reactionRate = atoms * xs * fuel.getActivityByDecay(DecayType.ALPHA); // Reactions per second
-        double atomsTransformed = reactionRate * time;
+        double reactionRate = atoms * xs * 1e-24 * alphaPopulation; // Reactions per second
+        double atomsTransformed = reactionRate * timeStep;
 
-        if (atomsTransformed <= 0) return;
+        if (atomsTransformed <= 0 || atomsTransformed > atoms) return;
 
         parentChain.setIsotopeMassAtoms(atoms - atomsTransformed, isotopeIndex);
 
         Isotope productIsotope = isotope.getAlphaCaptureProduct(isotope.getDecayEnergy());
         if (productIsotope == null) return;
 
-        DecayChain productChain = fuel.getDecayChain(isotope);
+        DecayChain productChain = fuel.getDecayChain(productIsotope);
         if (productChain == null) return;
 
-        int productIndex = parentChain.getIsotopeIndex(productIsotope);
+        int productIndex = productChain.getIsotopeIndex(productIsotope);
         if (productIndex == -1) return;
 
         double currentAtoms = productChain.getIsotopeAtoms(productIndex);
         productChain.setIsotopeMassAtoms(currentAtoms + atomsTransformed, productIndex);
+        
+        // Reduce alpha population by number of captures
+        alphaPopulation = Math.max(0, alphaPopulation - atomsTransformed);
     }
 
     /**
-     * Simulate alpha irradiation on the entire fuel, capturing alpha particles and transforming isotopes.
-     * @param time Time interval for the simulation (seconds).
+     * Simulate alpha irradiation on the entire fuel
      */
-    public void simulateAlphaIrradiation(double time) {
+    public void simulateAlphaIrradiation(double timeStep) {
+        if (timeStep <= 0) return;
+        
         for (DecayChain chain : fuel.getDecayChains()) {
             for (Isotope isotope : chain.getDecayChain()) {
-                if (isotope.getAlphaCaptureXS(neutronSource.getAlphaSource().getDecayEnergy()) > 0)
-                    simulateAlphaCapture(isotope, time);
+                if (isotope.getAlphaCaptureXS(neutronSource.getAlphaSource().getDecayEnergy()) > 0) {
+                    simulateAlphaCapture(isotope, timeStep);
+                }
             }
         }
     }
 
     /**
-     * Get total neutrons created in breeder each second.
-     * @return Total neutron emission rate (neutrons/s).
+     * Simulate a complete time step including:
+     * 1. Particle population updates
+     * 2. Neutron captures
+     * 3. Alpha captures
+     * 4. Decays
      */
-    public float getNeutronEmissionRate() {
-        return neutronSource.getNeutronRate() + additionalNeutronsEmitted;
+    public void simulateTimeStep(double timeStep) {
+        if (timeStep <= 0) return;
+        
+        // Update particle populations from sources and decays
+        updateParticlePopulations(timeStep);
+        
+        // Simulate neutron interactions
+        simulateNeutronIrradiation(timeStep);
+        
+        // Simulate alpha interactions
+        simulateAlphaIrradiation(timeStep);
+        
+        // Simulate decays
+        fuel.simulateDecay(timeStep);
+    }
+
+    public void simulateTime(double time, double timeStep) {
+        if (time <= 0 || timeStep <= 0) return;
+        
+        int steps = (int)Math.ceil(time / timeStep);
+        for (int i = 0; i < steps; i++) {
+            simulateTimeStep(timeStep);
+        }
+    }
+
+    /**
+     * Get total neutron emission rate (source + fissions - captures)
+     */
+    public double getNeutronEmissionRate() {
+        return neutronSource.getNeutronRate() + 
+               getFissionNeutronRate() - 
+               getCaptureRate();
+    }
+
+    /**
+     * Calculate current fission neutron production rate
+     */
+    public double getFissionNeutronRate() {
+        double fissionRate = 0;
+        for (DecayChain chain : fuel.getDecayChains()) {
+            for (Isotope isotope : chain.getDecayChain()) {
+                float xs = isotope.getFissionXS(neutronSource.getNeutronEnergy());
+                if (xs > 0) {
+                    double atoms = chain.getIsotopeAtoms(chain.getIsotopeIndex(isotope));
+                    fissionRate += atoms * xs * 1e-24 * neutronPopulation;
+                }
+            }
+        }
+        return fissionRate;
+    }
+
+    /**
+     * Calculate current neutron capture rate
+     */
+    public double getCaptureRate() {
+        double captureRate = 0;
+        for (DecayChain chain : fuel.getDecayChains()) {
+            for (Isotope isotope : chain.getDecayChain()) {
+                float xs = isotope.getNeutronCaptureXS(neutronSource.getNeutronEnergy());
+                if (xs > 0) {
+                    double atoms = chain.getIsotopeAtoms(chain.getIsotopeIndex(isotope));
+                    captureRate += atoms * xs * 1e-24 * neutronPopulation;
+                }
+            }
+        }
+        return captureRate;
+    }
+
+    /**
+     * Calculate the neutron multiplication factor (k-effective)
+     * Defined as (fission neutrons + source neutrons) / (captured neutrons + escaped neutrons)
+     */
+    public double getNeutronMultiplicationFactor() {
+        double totalNeutronProduction = neutronSource.getNeutronRate() + getFissionNeutronRate();
+        double totalNeutronLoss = getCaptureRate() + (neutronPopulation * neutronEscapeProbability);
+        
+        if (totalNeutronLoss == 0) return Double.POSITIVE_INFINITY;
+        return totalNeutronProduction / totalNeutronLoss;
     }
 }

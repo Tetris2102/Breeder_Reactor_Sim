@@ -23,19 +23,11 @@ public class DecayChainNest {
     }
 
     public void addDecayChain(DecayChain decayChain) {
-        this.decayChains.add(decayChain);
-
-        for (DecayChain decayChainEl : decayChains) {
-            for (Isotope isotope : decayChainEl.getDecayChain()) {
-                // Check if the isotope decays to or can transmutate to any isotope in the chain
-                boolean hasDecayProduct = hasDecayChain(isotope.getDecayIsotope());
-                boolean isAlphaTransmutation = hasDecayChain(isotope.getAlphaCaptureProduct(0.0f));
-                boolean isNeutronTransmutation = hasDecayChain(isotope.getNeutronCaptureProduct(0.0f));
-
-                if (hasDecayProduct || isAlphaTransmutation || isNeutronTransmutation) {
-                    isotopeToChainMap.put(isotope, Map.of(decayChainEl, decayChainEl.getIsotopeIndex(isotope)));
-                }
-            }
+        decayChains.add(decayChain);
+        for (int i = 0; i < decayChain.getDecayChain().size(); i++) {
+            Isotope isotope = decayChain.getIsotope(i);
+            isotopeToChainMap.computeIfAbsent(isotope, k -> new HashMap<>())
+                            .put(decayChain, i);
         }
     }
 
@@ -65,6 +57,12 @@ public class DecayChainNest {
     public void simulateDecay(double time) {
         for (DecayChain chain : decayChains) {
             chain.simulateDecay(time);
+        }
+    }
+
+    public void simulateDecay(double time, double timeStep) {
+        for (DecayChain chain : decayChains) {
+            chain.simulateDecay(time, timeStep);
         }
     }
 
@@ -108,5 +106,9 @@ public class DecayChainNest {
 
         double mass = chain.getIsotopeMassGrams(index);
         return isotope.getActivityPerGram() * mass;
+    }
+
+    public double getIsotopeAtoms(Isotope isotope) {
+        return getDecayChain(isotope).getIsotopeAtoms(isotope);
     }
 }
