@@ -21,14 +21,14 @@ public class Main {
 
         DecayChainNest myFuel = IsotopeLibrary.decayTree;
         myFuel.getDecayChain(IsotopeLibrary.Th229).setIsotopeMassGrams(IsotopeLibrary.Th229, 10.0f);
-        myFuel.getDecayChain(IsotopeLibrary.Th232).setIsotopeMassGrams(IsotopeLibrary.Ra228, 10.0f);
+        myFuel.getDecayChain(IsotopeLibrary.Th232).setIsotopeMassGrams(IsotopeLibrary.Th232, 10.0f);
         myFuel.getDecayChain(IsotopeLibrary.U233).setIsotopeMassGrams(IsotopeLibrary.U233, 10.0f);
         myFuel.getDecayChain(IsotopeLibrary.Pu238).setIsotopeMassGrams(IsotopeLibrary.Pu238, 0.0f);
-        myFuel.simulateDecay(3600 * 24 * 365 * 100, 10);
-        Breeder myBreeder = new Breeder(myFuel, neutronPuBe, 0.0f, 0.1f, 0.3f);
+        myFuel.simulateDecay(3600 * 24 * 30, 10);
+        Breeder myBreeder = new Breeder(myFuel, neutronPuBe, 1.0e26f, 0.1f, 0.3f);
         System.out.println("U-233 atoms: " + myFuel.getIsotopeAtoms(IsotopeLibrary.U233));
         System.out.println("Th-229 atoms: " + myFuel.getIsotopeAtoms(IsotopeLibrary.Th229));
-        myBreeder.simulateTime(3600 * 24 * 30, 1);
+        myBreeder.simulateTime(3600 * 24, 1);
         System.out.println("Pu-238 atoms: " + myFuel.getIsotopeAtoms(IsotopeLibrary.Pu238));
         System.out.println("U-234 atoms: " + myFuel.getIsotopeAtoms(IsotopeLibrary.U234));
         System.out.println("Th-230 atoms: " + myFuel.getIsotopeAtoms(IsotopeLibrary.Th230));
@@ -38,8 +38,10 @@ public class Main {
         System.out.println("U-233 atoms after capture: " + myFuel.getIsotopeAtoms(IsotopeLibrary.U233));
         System.out.println("Th-229 atoms: " + myFuel.getIsotopeAtoms(IsotopeLibrary.Th229));
         System.out.println("Pa-233 atoms: " + myFuel.getIsotopeAtoms(IsotopeLibrary.Pa233));
+        System.out.println("Th-233 atoms: " + myFuel.getIsotopeAtoms(IsotopeLibrary.Th233));
         System.out.println("Fission neutron rate: " + myBreeder.getNeutronEmissionRate());
-        System.out.println(myBreeder.getNeutronPopulation());
+        System.out.println(myBreeder.getNeutronFlux());
         System.out.println("Capture rate: " + myBreeder.getCaptureRate());
+        System.out.println(myBreeder.getFissionNeutronRate());
     }
 }
