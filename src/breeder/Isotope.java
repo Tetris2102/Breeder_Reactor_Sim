@@ -286,6 +286,12 @@ public class Isotope {
         return (float)activity;
     }
 
+    public float getActivityPerAtom() {
+        // Activity of the isotope in Bq/atom or decays/(second * atom)
+        double activity = Math.log(2) / halfLife;
+        return (float)activity;
+    }
+
     public boolean isStable() {
         return halfLife == Float.POSITIVE_INFINITY;
     }

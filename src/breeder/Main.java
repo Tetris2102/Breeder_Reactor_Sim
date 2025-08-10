@@ -1,5 +1,8 @@
 package breeder;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Main {
 
     // MEMO: maybe add densities for all isotopes in IsotopeLibrary
@@ -14,21 +17,21 @@ public class Main {
         // System.out.println("Ba-137m: " + myDC.getIsotopeMassGrams(IsotopeLibrary.Ba137m) + " g");
 
         // Implement Breeder functionality
-        float neutronSourceEnergy = 5.0e-4f;  // Example energy, MeV
+        float neutronSourceEnergy = 2.1f;  // Example energy, MeV
         NeutronSource neutronPuBe = new NeutronSource(IsotopeLibrary.Pu238, IsotopeLibrary.Be9, neutronSourceEnergy);
         neutronPuBe.setAlphaSourceMass(500.0f);
         System.out.println("Neutron source intensity: " + neutronPuBe.getNeutronRate() + " n/s");
 
         DecayChainNest myFuel = IsotopeLibrary.decayTree;
-        myFuel.getDecayChain(IsotopeLibrary.Th229).setIsotopeMassGrams(IsotopeLibrary.Th229, 10.0f);
+        myFuel.getDecayChain(IsotopeLibrary.Cs137).setIsotopeMassGrams(IsotopeLibrary.Cs137, 10.0f);
         myFuel.getDecayChain(IsotopeLibrary.Th232).setIsotopeMassGrams(IsotopeLibrary.Th232, 10.0f);
         myFuel.getDecayChain(IsotopeLibrary.U233).setIsotopeMassGrams(IsotopeLibrary.U233, 10.0f);
-        myFuel.getDecayChain(IsotopeLibrary.Pu238).setIsotopeMassGrams(IsotopeLibrary.Pu238, 0.0f);
+        myFuel.getDecayChain(IsotopeLibrary.Pu238).setIsotopeMassGrams(IsotopeLibrary.Pu238, 10.0f);
         myFuel.simulateDecay(3600 * 24 * 30, 10);
         Breeder myBreeder = new Breeder(myFuel, neutronPuBe, 1.0e26f, 0.1f, 0.3f);
         System.out.println("U-233 atoms: " + myFuel.getIsotopeAtoms(IsotopeLibrary.U233));
         System.out.println("Th-229 atoms: " + myFuel.getIsotopeAtoms(IsotopeLibrary.Th229));
-        myBreeder.simulateTime(3600 * 24, 1);
+        myBreeder.simulateTime(3600 * 24 * 30, 1);
         System.out.println("Pu-238 atoms: " + myFuel.getIsotopeAtoms(IsotopeLibrary.Pu238));
         System.out.println("U-234 atoms: " + myFuel.getIsotopeAtoms(IsotopeLibrary.U234));
         System.out.println("Th-230 atoms: " + myFuel.getIsotopeAtoms(IsotopeLibrary.Th230));
@@ -43,5 +46,15 @@ public class Main {
         System.out.println(myBreeder.getNeutronFlux());
         System.out.println("Capture rate: " + myBreeder.getCaptureRate());
         System.out.println(myBreeder.getFissionNeutronRate());
+        Map<Isotope, Double> isoMap = myBreeder.getIsotopesAtomsMap();
+        for (Isotope key : isoMap.keySet()) {
+            System.out.println(key.getName() + " - " + isoMap.get(key));
+        }
+        Map<Float, Double> spectrum = new HashMap<>();
+        spectrum = myBreeder.captureDecaySpectrum(10.0, DecayType.BETA);
+        System.out.println("Spectrum:");
+        for (Float energy : spectrum.keySet()) {
+            System.out.println(energy + " - " + spectrum.get(energy));
+        }
     }
 }

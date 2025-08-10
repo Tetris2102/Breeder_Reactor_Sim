@@ -93,6 +93,25 @@ public class DecayChainNest {
         return totalActivity;
     }
 
+    /**
+     * Capture decay spectrum for given time without
+     * accounting for decay chains (does not change)
+     * @param time - how long to capture spectrum, s
+     * @param decayType - decay type of captured spectrum
+     * @return - spectrum map (key - energy, value - decays)
+     */
+    public Map<Float, Double> captureDecaySpectrum(double time, DecayType decayType) {
+        Map<Float, Double> spectrum = new HashMap<>();
+        for (DecayChain dc : decayChains) {
+            for (Isotope i : dc.getIsotopesByDecay(decayType)) {
+                float energy = i.getDecayEnergy();
+                double decays = i.getActivityPerAtom() * dc.getIsotopeAtoms(i) * time;
+                spectrum.put(energy, decays);
+            }
+        }
+        return spectrum;
+    }
+
     public double getIsotopeActivity(Isotope isotope) {
         Map<DecayChain, Integer> chainInfo = isotopeToChainMap.get(isotope);
         if (chainInfo == null) return 0.0;
@@ -110,5 +129,15 @@ public class DecayChainNest {
 
     public double getIsotopeAtoms(Isotope isotope) {
         return getDecayChain(isotope).getIsotopeAtoms(isotope);
+    }
+
+    public Map<Isotope, Double> getIsotopesAtomsMap() {
+        Map<Isotope, Double> isotopeMap = new HashMap<>();
+        for (DecayChain dc : getDecayChains()) {
+            for (Isotope i : dc.getDecayChain()) {
+                isotopeMap.put(i, dc.getIsotopeAtoms(i));
+            }
+        }
+        return isotopeMap;
     }
 }

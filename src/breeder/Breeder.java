@@ -1,5 +1,7 @@
 package breeder;
 
+import java.util.Map;
+
 public class Breeder {
     private final DecayChainNest fuel;
     private final NeutronSource neutronSource;
@@ -107,7 +109,7 @@ public class Breeder {
         productChain.setIsotopeMassAtoms(currentAtoms + atomsTransformed, productIndex);
         
         // Reduce neutron population by number of captures
-        neutronFlux = Math.max(0, neutronFlux - atomsTransformed);
+        neutronFlux = neutronFlux - atomsTransformed;
     }
 
     /**
@@ -180,6 +182,10 @@ public class Breeder {
     //     }
     // }
 
+    public Map<Isotope, Double> getIsotopesAtomsMap() {
+        return fuel.getIsotopesAtomsMap();
+    }
+
     /**
      * Simulate a complete time step including:
      * 1. Particle population updates
@@ -236,6 +242,17 @@ public class Breeder {
             }
         }
         return fissionRate;
+    }
+
+    /**
+     * Capture decay spectrum for given time without
+     * accounting for decay chains (does not change)
+     * @param time - how long to capture spectrum, s
+     * @param decayType - decay type of captured spectrum
+     * @return - spectrum map (key - energy, value - decays)
+     */
+    public Map<Float, Double> captureDecaySpectrum(double time, DecayType decayType) {
+        return fuel.captureDecaySpectrum(time, decayType);
     }
 
     /**

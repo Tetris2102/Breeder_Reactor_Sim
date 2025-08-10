@@ -1,5 +1,8 @@
 package breeder;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DecayChain {
     private final double AVOGADRO = 6.022e23; // Avogadro's number
@@ -52,7 +55,7 @@ public class DecayChain {
         }
     }
 
-    public double simulateTotalDecays(double time) {
+    public double getTotalDecays(double time) {
         double decayAmounts = 0;
         double decaysForIsotope;
         for (int i = 0; i < isotopesAtoms.size(); i++) {
@@ -124,6 +127,14 @@ public class DecayChain {
         return isotopesAtoms;
     }
 
+    public Map<Isotope, Double> getIsotopesAtomsMap() {
+        Map<Isotope, Double> isotopeMap = new HashMap<>();
+        for (int i = 0; i < decayChain.size(); i++) {
+            isotopeMap.put(decayChain.get(i), isotopesAtoms.get(i));
+        }
+        return isotopeMap;
+    }
+
     public void setIsotopesAtoms(ArrayList<Double> atoms) {
         if (atoms.size() != isotopesAtoms.size()) {
             throw new IllegalArgumentException("Length of atoms array must match decay chain length.");
@@ -165,5 +176,15 @@ public class DecayChain {
             masses.add(isotopesAtoms.get(i) / AVOGADRO * decayChain.get(i).getMassMolar());
         }
         return masses;
+    }
+
+    public ArrayList<Isotope> getIsotopesByDecay(DecayType decayType) {
+        ArrayList<Isotope> isotopeList = new ArrayList<>();
+        for (Isotope i : decayChain) {
+            if (i.getDecayType() == decayType) {
+                isotopeList.add(i);
+            }
+        }
+        return isotopeList;
     }
 }
