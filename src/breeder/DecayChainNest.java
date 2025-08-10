@@ -94,19 +94,40 @@ public class DecayChainNest {
     }
 
     /**
-     * Capture decay spectrum for given time without
-     * accounting for decay chains (does not change)
-     * @param time - how long to capture spectrum, s
-     * @param decayType - decay type of captured spectrum
-     * @return - spectrum map (key - energy, value - decays)
+     * Captures decay spectrum for given time (without decay simulation)
+     * @param time Spectrum capture time, s
+     * @param decayType Decay type to capture
+     * @return Spectrum map (key - energy, value - decays)
      */
-    public Map<Float, Double> captureDecaySpectrum(double time, DecayType decayType) {
-        Map<Float, Double> spectrum = new HashMap<>();
+    public Map<Double, Double> captureDecaySpectrum(double time, DecayType decayType) {
+        Map<Double, Double> spectrum = new HashMap<>();
         for (DecayChain dc : decayChains) {
             for (Isotope i : dc.getIsotopesByDecay(decayType)) {
-                float energy = i.getDecayEnergy();
+                double energy = i.getDecayEnergy();
                 double decays = i.getActivityPerAtom() * dc.getIsotopeAtoms(i) * time;
                 spectrum.put(energy, decays);
+            }
+        }
+        return spectrum;
+    }
+
+    /**
+     * Captures decay spectrum with corresponding isotopes
+     * for given time (without decay simulation)
+     * @param time Spectrum capture time, s
+     * @param decayType Decay type to capture
+     * @return Spectrum map (key - isotope, value - energy, decays)
+     */
+    public Map<Isotope, Double[]> captureDecaySpectrumIMap(double time, DecayType decayType) {
+        Map<Isotope, Double[]> spectrum = new HashMap<>();
+        for (DecayChain dc : decayChains) {
+            for (Isotope i : dc.getIsotopesByDecay(decayType)) {
+                double energy = i.getDecayEnergy();
+                double decays = i.getActivityPerAtom() * dc.getIsotopeAtoms(i) * time;
+                Double[] energyDecayArr = new Double[2];
+                energyDecayArr[0] = energy;
+                energyDecayArr[1] = decays;
+                spectrum.put(i, energyDecayArr);
             }
         }
         return spectrum;

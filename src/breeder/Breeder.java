@@ -245,14 +245,24 @@ public class Breeder {
     }
 
     /**
-     * Capture decay spectrum for given time without
-     * accounting for decay chains (does not change)
-     * @param time - how long to capture spectrum, s
-     * @param decayType - decay type of captured spectrum
-     * @return - spectrum map (key - energy, value - decays)
+     * Captures decay spectrum for given time (without decay simulation)
+     * @param time Spectrum capture time, s
+     * @param decayType Decay type to capture
+     * @return Spectrum map (key - energy, value - decays)
      */
-    public Map<Float, Double> captureDecaySpectrum(double time, DecayType decayType) {
+    public Map<Double, Double> captureDecaySpectrum(double time, DecayType decayType) {
         return fuel.captureDecaySpectrum(time, decayType);
+    }
+
+    /**
+     * Captures decay spectrum with corresponding isotopes
+     * for given time (without decay simulation)
+     * @param time Spectrum capture time, s
+     * @param decayType Decay type to capture
+     * @return Spectrum map (key - isotope, value - energy, decays)
+     */
+    public Map<Isotope, Double[]> captureDecaySpectrumIMap(double time, DecayType decayType) {
+        return fuel.captureDecaySpectrumIMap(time, decayType);
     }
 
     /**

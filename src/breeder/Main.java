@@ -50,11 +50,11 @@ public class Main {
         for (Isotope key : isoMap.keySet()) {
             System.out.println(key.getName() + " - " + isoMap.get(key));
         }
-        Map<Float, Double> spectrum = new HashMap<>();
-        spectrum = myBreeder.captureDecaySpectrum(10.0, DecayType.BETA);
+        Map<Isotope, Double[]> spectrum = new HashMap<>();
+        spectrum = myBreeder.captureDecaySpectrumIMap(10.0, DecayType.BETA);
         System.out.println("Spectrum:");
-        for (Float energy : spectrum.keySet()) {
-            System.out.println(energy + " - " + spectrum.get(energy));
+        for (Isotope i : spectrum.keySet()) {
+            System.out.println(i.getName() + " - " + spectrum.get(i)[1] + " decays");
         }
     }
 }
