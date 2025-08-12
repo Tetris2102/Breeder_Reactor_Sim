@@ -13,12 +13,12 @@ public class Breeder {
     // private final float alphaEscapeProbability; // Probability of alpha escaping per second
     
     public Breeder(DecayChainNest fuel, NeutronSource neutronSource, 
-                  float initialNeutrons, float neutronEscapeProbability, float alphaEscapeProbability) {
+                  float initialNeutrons, float neutronEscapeProbability/*, float alphaEscapeProbability*/) {
         if (fuel == null || neutronSource == null) {
             throw new IllegalArgumentException("Fuel and neutron source cannot be null");
         }
-        if (neutronEscapeProbability < 0 || neutronEscapeProbability > 1 ||
-            alphaEscapeProbability < 0 || alphaEscapeProbability > 1) {
+        if (neutronEscapeProbability < 0 || neutronEscapeProbability > 1 /*||
+            alphaEscapeProbability < 0 || alphaEscapeProbability > 1*/) {
             throw new IllegalArgumentException("Escape probabilities must be between 0 and 1");
         }
         

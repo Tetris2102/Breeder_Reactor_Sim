@@ -92,8 +92,7 @@ public class DecaySpectrum {
             }
             
             // Safety check to prevent infinite loops
-            if (totalTime > 1000000.0) { // 1 million seconds = ~11.6 days
-                System.out.println("Warning: Simulation stopped after " + totalTime + " seconds to prevent infinite loop");
+            if (decayType != DecayType.GAMMA && totalTime > 10.0 && totalCounts < 10.0) {
                 break;
             }
         }

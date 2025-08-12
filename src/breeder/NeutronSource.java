@@ -3,8 +3,8 @@ package breeder;
 // Class to simulate a neutron source itilizing (α, n) reaction
 
 public class NeutronSource {
-    private final Isotope alphaSource;
-    private final Isotope neutronSource;
+    private Isotope alphaSource;
+    private Isotope neutronSource;
     private final float neutronEnergy; // eV
     private float alphaMass;  // g
     private final float AVOGADRO = 6.022e23f; // mol^-1
@@ -20,6 +20,14 @@ public class NeutronSource {
         this.alphaSource = alphaSource;
         this.neutronSource = neutronSource;
         this.neutronEnergy = neutronEnergy;
+    }
+
+    public void setNeutronSource(Isotope neutronSource) {
+        this.neutronSource = neutronSource;
+    }
+
+    public void setAlphaSource(Isotope alphaSource) {
+        this.alphaSource = alphaSource;
     }
 
     public Isotope getAlphaSource() {

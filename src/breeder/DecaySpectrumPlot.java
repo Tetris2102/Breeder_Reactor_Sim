@@ -6,20 +6,53 @@ import java.util.List;
 import javax.swing.*;
 
 public class DecaySpectrumPlot extends JPanel {
-    private final Map<Double, Double> spectrumData;
+    private Map<Double, Double> spectrumData;
 
     public DecaySpectrumPlot(Map<Double, Double> spectrumData) {
         this.spectrumData = spectrumData;
         setBackground(Color.WHITE); // White background
     }
+    
+    public void updateSpectrum(Map<Double, Double> newSpectrumData) {
+        this.spectrumData.clear();
+        this.spectrumData.putAll(newSpectrumData);
+        repaint(); // Trigger redraw
+    }
+    
+    // Smart number formatting for compact axis labels
+    private String formatCompactNumber(double value, double range) {
+        if (range >= 1000000) {
+            // Use scientific notation for very large ranges
+            return String.format("%.1e", value);
+        } else if (range >= 10000) {
+            // Use K notation for thousands (e.g., 1.5K instead of 1500)
+            if (value >= 1000) {
+                return String.format("%.1fK", value / 1000);
+            } else {
+                return String.format("%.0f", value);
+            }
+        } else if (range >= 1000) {
+            // Use compact format for hundreds
+            return String.format("%.0f", value);
+        } else if (range >= 100) {
+            // Use 1 decimal place for tens
+            return String.format("%.1f", value);
+        } else if (range >= 10) {
+            // Use 1 decimal place for small numbers
+            return String.format("%.1f", value);
+        } else {
+            // Use 1 decimal place for very small numbers
+            return String.format("%.1f", value);
+        }
+    }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (spectrumData.isEmpty()) return;
-
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1.0f));
+        
+        if (spectrumData.isEmpty()) return;
 
         // Find min/max for X and Y
         // Dynamically
@@ -37,7 +70,27 @@ public class DecaySpectrumPlot extends JPanel {
             if (y > maxY) maxY = y;
         }
 
-        if (maxY <= 0) return; // Nothing to plot
+        if (maxY <= 0) {
+            // Draw empty plot with minimum scale
+            int w = getWidth();
+            int h = getHeight();
+            int margin = 50;
+            g2.setColor(Color.BLACK);
+            g2.drawLine(margin, h - margin + 1, w - margin, h - margin + 1); // X axis
+            g2.drawLine(margin, margin, margin, h - margin); // Y axis
+            g2.drawString("Energy (keV)", w / 2 - 30, h - 5); // X-axis label
+            g2.rotate(-Math.PI / 2);
+            g2.drawString("Counts", -h / 2 - 20, 15); // Y-axis label
+            g2.rotate(Math.PI / 2);
+            
+            // Draw "No Data" message
+            g2.setColor(Color.GRAY);
+            g2.setFont(new Font("Arial", Font.ITALIC, 16));
+            String noDataMsg = "No spectrum data available";
+            int msgWidth = g2.getFontMetrics().stringWidth(noDataMsg);
+            g2.drawString(noDataMsg, (w - msgWidth) / 2, h / 2);
+            return;
+        }
         
         // Smart scaling: Set a reasonable cap based on the energy distribution
         // Find peaks in different energy regions to avoid one peak dominating
@@ -74,6 +127,12 @@ public class DecaySpectrumPlot extends JPanel {
                 maxY = suggestedCap;
             }
         }
+        
+        // Ensure minimum Y-axis scale to prevent very small scales
+        double minYScale = 10.0; // Minimum 10 counts on Y-axis
+        if (maxY < minYScale) {
+            maxY = minYScale;
+        }
 
         int w = getWidth();
         int h = getHeight();
@@ -101,49 +160,66 @@ public class DecaySpectrumPlot extends JPanel {
         //     g2.setColor(Color.BLACK); // Reset color for tick labels
         // }
 
-        // ===== Draw X-axis ticks & labels (adaptive spacing) =====
-        double xTickStep = 1.0; // start at 1 keV
+        // ===== Draw X-axis ticks & labels (dynamic adaptive spacing) =====
+        double xRange = maxX - minX;
         double minXPixelSpacing = 50; // min pixel gap between ticks
-
-        // Check if we need to increase spacing
+        
+        // Calculate appropriate tick step based on energy range
+        double xTickStep = Math.pow(10, Math.floor(Math.log10(xRange / 8))); // Start with ~8 ticks
+        
+        // Refine to nice round numbers
+        if (xTickStep > xRange / 4) xTickStep = xRange / 4;
+        if (xTickStep > xRange / 6) xTickStep = xRange / 6;
+        if (xTickStep > xRange / 8) xTickStep = xRange / 8;
+        if (xTickStep > xRange / 10) xTickStep = xRange / 10;
+        
+        // Ensure minimum tick step
+        xTickStep = Math.max(xTickStep, 0.1);
+        
         double xPixelPerTick = xTickStep * xScale;
-        if (xPixelPerTick < minXPixelSpacing) {
-            xTickStep *= 2; // bump to 2 keV
+        
+        // If ticks are too close, increase spacing
+        while (xPixelPerTick < minXPixelSpacing && xTickStep < xRange) {
+            xTickStep *= 2;
             xPixelPerTick = xTickStep * xScale;
         }
-        if (xPixelPerTick < minXPixelSpacing) {
-            xTickStep *= 5; // bump to 10 keV
-            xPixelPerTick = xTickStep * xScale;
-        }
-        if (xPixelPerTick < minXPixelSpacing) {
-            xTickStep *= 5; // bump to 50 keV
-            xPixelPerTick = xTickStep * xScale;
+        
+        // Safety check: limit maximum number of ticks to prevent overcrowding
+        int maxTicks = 20;
+        int estimatedTicks = (int) Math.ceil(xRange / xTickStep);
+        if (estimatedTicks > maxTicks) {
+            xTickStep = xRange / maxTicks;
         }
 
         for (double xVal = Math.ceil(minX / xTickStep) * xTickStep; xVal <= maxX; xVal += xTickStep) {
             int xPix = (int) (margin + (xVal - minX) * xScale);
             g2.drawLine(xPix + 1, h - margin, xPix + 1, h - margin + 5); // tick
-            String label = String.format("%.0f", xVal);
+            
+            // Smart label formatting for compact display
+            String label = formatCompactNumber(xVal, xRange);
+            
             int labelWidth = g2.getFontMetrics().stringWidth(label);
             g2.drawString(label, xPix - labelWidth / 2, h - margin + 20);
         }
 
 
-        // ===== Draw Y-axis ticks & labels (adaptive spacing) =====
-        // Calculate appropriate tick step based on the actual data range
+        // ===== Draw Y-axis ticks & labels (dynamic adaptive spacing) =====
         double yRange = maxY;
-        double yTickStep = Math.pow(10, Math.floor(Math.log10(yRange / 5))); // Start with ~5 ticks
+        double minYPixelSpacing = 30; // min pixel gap between ticks
+        
+        // Calculate appropriate tick step based on the actual data range
+        double yTickStep = Math.pow(10, Math.floor(Math.log10(yRange / 6))); // Start with ~6 ticks
         
         // Refine the tick step to be a nice round number
-        if (yTickStep > yRange / 2) yTickStep = yRange / 2;
         if (yTickStep > yRange / 3) yTickStep = yRange / 3;
         if (yTickStep > yRange / 4) yTickStep = yRange / 4;
         if (yTickStep > yRange / 5) yTickStep = yRange / 5;
+        if (yTickStep > yRange / 6) yTickStep = yRange / 6;
+        if (yTickStep > yRange / 8) yTickStep = yRange / 8;
         
         // Ensure minimum tick step
-        yTickStep = Math.max(yTickStep, 1.0);
+        yTickStep = Math.max(yTickStep, 1.0); // Minimum 1 count per tick
         
-        double minYPixelSpacing = 30; // min pixel gap between ticks
         double yPixelPerTick = yTickStep * yScale;
         
         // If ticks are too close, increase spacing
@@ -151,11 +227,21 @@ public class DecaySpectrumPlot extends JPanel {
             yTickStep *= 2;
             yPixelPerTick = yTickStep * yScale;
         }
+        
+        // Safety check: limit maximum number of ticks to prevent overcrowding
+        int maxYTicks = 15;
+        int estimatedYTicks = (int) Math.ceil(yRange / yTickStep);
+        if (estimatedYTicks > maxYTicks) {
+            yTickStep = yRange / maxYTicks;
+        }
 
         for (double yVal = 0; yVal <= maxY; yVal += yTickStep) {
             int yPix = (int) (h - margin - yVal * yScale);
             g2.drawLine(margin - 5, yPix, margin, yPix); // tick
-            String label = String.format("%.0f", yVal);
+            
+            // Smart label formatting for compact display
+            String label = formatCompactNumber(yVal, yRange);
+            
             int labelWidth = g2.getFontMetrics().stringWidth(label);
             g2.drawString(label, margin - labelWidth - 8, yPix + 4);
         }
