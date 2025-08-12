@@ -99,13 +99,14 @@ public class DecayChainNest {
      * @param decayType Decay type to capture
      * @return Spectrum map (key - energy, value - decays)
      */
-    public Map<Double, Double> captureDecaySpectrum(double time, DecayType decayType) {
+    public Map<Double, Double> captureDS(double time, DecayType decayType) {
         Map<Double, Double> spectrum = new HashMap<>();
         for (DecayChain dc : decayChains) {
             for (Isotope i : dc.getIsotopesByDecay(decayType)) {
-                double energy = i.getDecayEnergy();
+                double energy = i.getDecayEnergy() * 1000.0; // Convert MeV to keV
                 double decays = i.getActivityPerAtom() * dc.getIsotopeAtoms(i) * time;
-                spectrum.put(energy, decays);
+                // Add to existing value if energy already exists, otherwise put new value
+                spectrum.merge(energy, decays, Double::sum);
             }
         }
         return spectrum;
@@ -118,11 +119,11 @@ public class DecayChainNest {
      * @param decayType Decay type to capture
      * @return Spectrum map (key - isotope, value - energy, decays)
      */
-    public Map<Isotope, Double[]> captureDecaySpectrumIMap(double time, DecayType decayType) {
+    public Map<Isotope, Double[]> captureDSIMap(double time, DecayType decayType) {
         Map<Isotope, Double[]> spectrum = new HashMap<>();
         for (DecayChain dc : decayChains) {
             for (Isotope i : dc.getIsotopesByDecay(decayType)) {
-                double energy = i.getDecayEnergy();
+                double energy = i.getDecayEnergy() * 1000.0; // Convert MeV to keV
                 double decays = i.getActivityPerAtom() * dc.getIsotopeAtoms(i) * time;
                 Double[] energyDecayArr = new Double[2];
                 energyDecayArr[0] = energy;

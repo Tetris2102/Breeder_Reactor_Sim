@@ -245,27 +245,6 @@ public class Breeder {
     }
 
     /**
-     * Captures decay spectrum for given time (without decay simulation)
-     * @param time Spectrum capture time, s
-     * @param decayType Decay type to capture
-     * @return Spectrum map (key - energy, value - decays)
-     */
-    public Map<Double, Double> captureDecaySpectrum(double time, DecayType decayType) {
-        return fuel.captureDecaySpectrum(time, decayType);
-    }
-
-    /**
-     * Captures decay spectrum with corresponding isotopes
-     * for given time (without decay simulation)
-     * @param time Spectrum capture time, s
-     * @param decayType Decay type to capture
-     * @return Spectrum map (key - isotope, value - energy, decays)
-     */
-    public Map<Isotope, Double[]> captureDecaySpectrumIMap(double time, DecayType decayType) {
-        return fuel.captureDecaySpectrumIMap(time, decayType);
-    }
-
-    /**
      * Calculate current neutron capture rate
      */
     public double getCaptureRate() {
