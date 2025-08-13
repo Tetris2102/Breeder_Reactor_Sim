@@ -4,7 +4,9 @@ A little and simplified java simulation of a breeder reactor with Th-232 fuel an
 The main goal of this project is to be able to see how masses of isotopes in fuel change with time.
 It also should be able to track activity of all isotopes and its type (alpha, beta, gamma, neutron).
 
-To run an example simulation, open the terminal and paste:
+To run the app you should have OpenJDK installed (Java).
+
+To run the simulator, open terminal and paste:
 ```
 git clone https://github.com/Tetris2102/Breeder_Reactor_Sim.git
 cd Breeder_Reactor_Sim/classes
