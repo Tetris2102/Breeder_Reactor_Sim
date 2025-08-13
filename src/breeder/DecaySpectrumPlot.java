@@ -7,15 +7,19 @@ import javax.swing.*;
 
 public class DecaySpectrumPlot extends JPanel {
     private Map<Double, Double> spectrumData;
+    // private Map<Isotope, Double[]> spectrumLines;  // spectrumData without Gaussian smoothing (single peaks), key - Isotope, value - decay energy, MeV
 
-    public DecaySpectrumPlot(Map<Double, Double> spectrumData) {
+    public DecaySpectrumPlot(Map<Double, Double> spectrumData/*, Map<Isotope, Double[]> spectrumLines*/) {
         this.spectrumData = spectrumData;
+        // this.spectrumLines = spectrumLines;
         setBackground(Color.WHITE); // White background
     }
     
-    public void updateSpectrum(Map<Double, Double> newSpectrumData) {
+    public void updateSpectrum(Map<Double, Double> newSpectrumData/*, Map<Isotope, Double[]> newSpectrumLines*/) {
         this.spectrumData.clear();
         this.spectrumData.putAll(newSpectrumData);
+        // this.spectrumLines.clear();
+        // this.spectrumLines.putAll(newSpectrumLines);
         repaint(); // Trigger redraw
     }
     
@@ -52,13 +56,13 @@ public class DecaySpectrumPlot extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1.0f));
         
-        if (spectrumData.isEmpty()) return;
+        if (spectrumData.isEmpty()/* || spectrumLines.isEmpty()*/) return;
 
         // Find min/max for X and Y
         // Dynamically
         // double minX = Double.MAX_VALUE, maxX = -Double.MAX_VALUE;
         // double maxY = -Double.MAX_VALUE;
-        // Or fixed minimum values
+        // Or with fixed minimum values
         double minX = 0.0, maxX = -Double.MAX_VALUE;
         double maxY = 0.0;
 
@@ -246,6 +250,8 @@ public class DecaySpectrumPlot extends JPanel {
             g2.drawString(label, margin - labelWidth - 8, yPix + 4);
         }
 
+        FontMetrics fm = g2.getFontMetrics();  // For centering text
+
         // Draw the spectrum bars
         for (var entry : spectrumData.entrySet()) {
             double originalValue = entry.getValue();
@@ -254,8 +260,6 @@ public class DecaySpectrumPlot extends JPanel {
             // Prevent first column from crossing the Y-axis
             int xPix = (int) (margin + (entry.getKey() - minX) * xScale + 1);
             int yPix = (int) (h - margin - displayValue * yScale);
-            
-            g2.setColor(Color.GREEN);
 
             // Use different color for capped peaks
             // if (originalValue > maxY) {
@@ -264,7 +268,25 @@ public class DecaySpectrumPlot extends JPanel {
             //     g2.setColor(Color.GREEN); // Green for normal peaks
             // }
             
+            g2.setColor(Color.GREEN);
             g2.drawLine(xPix, h - margin, xPix, yPix);
+
+            // Mark isotope peaks (not working currently)
+            // ArrayList<Isotope> isotopesMarked = new ArrayList<>();
+            // g2.setColor(Color.BLACK);
+            // for (Isotope i : spectrumLines.keySet()) {
+            //     if(spectrumLines.get(i)[1] > 5 && !isotopesMarked.contains(i)) {
+            //         String iName = i.getName();
+            //         int textWidth = fm.stringWidth(iName);
+            //         int textHeight = fm.getAscent() + fm.getDescent();
+
+            //         int centeredX = xPix - (textWidth / 2);
+            //         int centeredY = yPix - (textHeight / 2);
+
+            //         g2.drawString(i.getName(), centeredX, centeredY - 10);
+            //         isotopesMarked.add(i);
+            //     }
+            // }
         }
     }
 

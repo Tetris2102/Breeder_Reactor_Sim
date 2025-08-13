@@ -135,7 +135,9 @@ public class Main {
             // fuel.getDecayChain(IsotopeLibrary.Tc99m).setIsotopeMassGrams(IsotopeLibrary.Tc99m, 0.000000001f);
 
             // Create neutron source
-            NeutronSource neutronSource = new NeutronSource(IsotopeLibrary.Pu238, IsotopeLibrary.Be9, IsotopeLibrary.Pu238.getDecayEnergy());
+            float neutronEnergyMeanMeV = 4.5f;  // Mean energy of 
+            NeutronSource neutronSource = new NeutronSource(IsotopeLibrary.Pu238, IsotopeLibrary.Be9);
+            neutronSource.setAlphaSourceMass(0.0f);  // 0 grams by default
 
             // Create breeder
             Breeder breeder = new Breeder(fuel, neutronSource, 100.0f, 0.3f);
@@ -145,7 +147,8 @@ public class Main {
             
             // Create initial empty spectrum
             Map<Double, Double> initialSpectrum = new java.util.HashMap<>();
-            DecaySpectrumPlot plot = new DecaySpectrumPlot(initialSpectrum);
+            // Map<Isotope, Double[]> initialSpectrumLines = new java.util.HashMap<>();
+            DecaySpectrumPlot plot = new DecaySpectrumPlot(initialSpectrum/*, initialSpectrumLines*/);
             
             // Create spectrum capture panel
             JPanel capturePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
@@ -155,7 +158,7 @@ public class Main {
             JLabel decayTypeLabel = new JLabel("Decay Type:");
             String[] decayTypes = {"BETA", "GAMMA", "ALPHA"};
             JComboBox<String> decayTypeCombo = new JComboBox<>(decayTypes);
-            decayTypeCombo.setSelectedItem("BETA"); // Default to beta
+            decayTypeCombo.setSelectedItem("GAMMA"); // Default to gamma
             
             // Capture button
             JButton captureButton = new JButton("Capture Spectrum");
@@ -243,7 +246,7 @@ public class Main {
             gbc2.gridx = 0; gbc2.gridy = 1; gbc2.gridwidth = 2;
             JButton simulateButton = new JButton("Simulate Reactor");
             simulateButton.setBackground(new Color(220, 20, 60)); // Crimson
-            simulateButton.setForeground(Color.WHITE);
+            simulateButton.setForeground(Color.BLACK);
             reactorPanel.add(simulateButton, gbc2);
             
             // Neutron source panel
@@ -273,14 +276,14 @@ public class Main {
             neutronPanel.add(new JLabel("Source Mass (g):"), gbc3);
             gbc3.gridx = 1; gbc3.gridy = 2;
             JTextField sourceMassField = new JTextField(10);
-            sourceMassField.setText("500.0");
+            sourceMassField.setText("1.0");
             neutronPanel.add(sourceMassField, gbc3);
             
             // Set neutron source button
             gbc3.gridx = 0; gbc3.gridy = 3; gbc3.gridwidth = 2;
             JButton setNeutronButton = new JButton("Set Neutron Source");
             setNeutronButton.setBackground(new Color(255, 140, 0)); // Dark orange
-            setNeutronButton.setForeground(Color.WHITE);
+            setNeutronButton.setForeground(Color.BLACK);
             neutronPanel.add(setNeutronButton, gbc3);
             
             // Helper function to find isotope by name
@@ -340,9 +343,9 @@ public class Main {
                 double sigma = 4.0;
                 double backgroundCounts = 5.0;
                 Map<Double, Double> newSpectrum = decaySpectrum.simulateRealDS(2500, 0.1, decayType, sigma, backgroundCounts);
-                
+                // Map<Isotope, Double[]> newSpectrumLines = decaySpectrum.captureDSIMap(2500, 0.1, decayType);
                 // Update plot
-                plot.updateSpectrum(newSpectrum);
+                plot.updateSpectrum(newSpectrum/*, newSpectrumLines*/);
                 
                 // Update table
                 updateTable.run();
@@ -350,8 +353,6 @@ public class Main {
                 // Update status
                 statusLabel.setText(selectedDecayType + " spectrum captured: " + newSpectrum.size() + " data points");
                 statusLabel.setForeground(new Color(0, 128, 0)); // Green
-                
-                // System.out.println(selectedDecayType + " spectrum captured! Data points: " + newSpectrum.size());
             });
             
             // Set isotope button action
@@ -400,8 +401,6 @@ public class Main {
                     statusLabel.setText("Reactor simulated for " + time + " seconds");
                     statusLabel.setForeground(new Color(0, 128, 0)); // Green
                     
-                    // System.out.println("Reactor simulated for " + time + " seconds");
-                    
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(frame, "Invalid time format!", 
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -431,14 +430,18 @@ public class Main {
                     
                     // Create neutron source
                     neutronSource.setAlphaSource(sourceIsotope);
-                    neutronSource.setNeutronSource(targetIsotope);
+                    neutronSource.setTargetIsotope(targetIsotope);
                     neutronSource.setAlphaSourceMass((float) sourceMass);
+                    
+                    if (neutronSource.getNeutronEnergy() == 0.0f) {
+                        JOptionPane.showMessageDialog(frame, "Neutron emission energy is not set for " + targetName + "! " + targetIsotope.getNEmissionEnergy(), 
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
                     
                     statusLabel.setText("Neutron source set: " + sourceName + " + " + targetName + 
                                       " (Rate: " + String.format("%.2e", neutronSource.getNeutronRate()) + " n/s)");
                     statusLabel.setForeground(new Color(0, 128, 0)); // Green
-                    
-                    // System.out.println("Neutron source created: " + neutronSource.getNeutronRate() + " n/s");
                     
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(frame, "Invalid mass format!", 

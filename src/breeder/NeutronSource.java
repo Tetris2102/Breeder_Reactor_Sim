@@ -5,25 +5,24 @@ package breeder;
 public class NeutronSource {
     private Isotope alphaSource;
     private Isotope neutronSource;
-    private final float neutronEnergy; // eV
+    private float neutronEnergy; // MeV
     private float alphaMass;  // g
     private final float AVOGADRO = 6.022e23f; // mol^-1
 
-    public NeutronSource(Isotope alphaSource, Isotope neutronSource, float neutronEnergy) {
+    public NeutronSource(Isotope alphaSource, Isotope neutronSource) {
         if (alphaSource.getDecayType() != DecayType.ALPHA) {
             throw new IllegalArgumentException("Alpha source must be an alpha-emitting isotope.");
         }
-        if (neutronEnergy <= 0) {
-            throw new IllegalArgumentException("Neutron energy must be positive.");
-        }
 
         this.alphaSource = alphaSource;
+        this.neutronEnergy = alphaSource.getNEmissionEnergy();
+
         this.neutronSource = neutronSource;
-        this.neutronEnergy = neutronEnergy;
     }
 
-    public void setNeutronSource(Isotope neutronSource) {
-        this.neutronSource = neutronSource;
+    public void setTargetIsotope(Isotope targetIsotope) {
+        this.neutronSource = targetIsotope;
+        this.neutronEnergy = targetIsotope.getNEmissionEnergy();
     }
 
     public void setAlphaSource(Isotope alphaSource) {

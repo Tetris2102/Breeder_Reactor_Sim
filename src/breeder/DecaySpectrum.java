@@ -18,6 +18,22 @@ public class DecaySpectrum {
         return fuel.captureDSIMap(time, decayType);
     }
 
+    public Map<Isotope, Double[]> captureDSIMap(int countsToStop, double timeStep, DecayType decayType) {
+        int counts = 0;
+        Map<Isotope, Double[]> spectrumLines = new HashMap<>();
+
+        while (true) {
+            spectrumLines = fuel.captureDSIMap(timeStep, decayType);
+            for (Isotope i : spectrumLines.keySet()) {
+                counts += spectrumLines.get(i)[1];
+            }
+            if (counts >= countsToStop) {
+                break;
+            }
+        }
+        return spectrumLines;
+    }
+
     // This method is no longer needed in its old form.
     // The background is now added directly in simulateRealDS.
     
@@ -57,11 +73,13 @@ public class DecaySpectrum {
 
     // Now takes sigma as a parameter and adds a flat background
     public Map<Double, Double> simulateRealDS(
-        double countsToStop, double timeStep, DecayType decayType, double sigma, double backgroundCounts) {
+        int countsToStop, double timeStep, DecayType decayType, double sigma, double backgroundCounts) {
         
         double totalTime = 0.0;
         Map<Double, Double> accumulatedSpectrum = new HashMap<>();
         Map<Double, Double> broadenedSpectrum = new HashMap<>();
+
+        int totalCounts = 0;
 
         while (true) {
             fuel.simulateDecay(timeStep);
@@ -74,8 +92,6 @@ public class DecaySpectrum {
                 accumulatedSpectrum.merge(entry.getKey(), entry.getValue(), Double::sum);
             }
             
-
-            
             // Broaden the accumulated spectrum using the provided sigma
             broadenedSpectrum = toGauss(accumulatedSpectrum, sigma);
             
@@ -84,8 +100,8 @@ public class DecaySpectrum {
                 broadenedSpectrum.replaceAll((energy, counts) -> counts + backgroundCounts);
             }
 
-            // Calculate total counts in the current broadened spectrum
-            double totalCounts = broadenedSpectrum.values().stream().mapToDouble(Double::doubleValue).sum();
+            // Increment total counts in the current broadened spectrum
+            totalCounts += broadenedSpectrum.values().stream().mapToInt(Double::intValue).sum();
             
             if (totalCounts >= countsToStop) {
                 break;

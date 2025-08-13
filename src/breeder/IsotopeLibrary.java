@@ -196,6 +196,9 @@ public abstract class IsotopeLibrary {
         // Lower energy alphas (~4 MeV)
         Be9.setAlphaCapture(4.0f, 0.03f, C12);
 
+        // Neutron emission energy from Be-9 alpha capture
+        Be9.setNEmissionEnergy(4.5f);  // MeV
+
         // Decay properties for Be9NCChain
         Be9NCChain.addIsotopeList(Be9NCIsotopeList, new double[Be9NCIsotopeList.length]);
 

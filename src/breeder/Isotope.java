@@ -13,6 +13,7 @@ public class Isotope {
     private Isotope decayIsotope;
     private DecayType decayType;  // ALPHA, BETA, GAMMA, NEUTRON
     private float decayEnergy;  // MeV
+    private float nEmissionEnergy;  // Mean energy of neutrons emitted through (alpha, n) reaction, MeV
     private float density;  // g/cm^3
     private final TreeMap<Float, CaptureData> neutronCaptureXS;  // Neutron capture cross section, barns
     private final TreeMap<Float, CaptureData> alphaCaptureXS;  // Alpha capture cross section, barns
@@ -31,6 +32,14 @@ public class Isotope {
         this.decayIsotope = decayIsotope;
         this.decayType = decayType;
         this.decayEnergy = decayEnergy;
+    }
+
+    public void setNEmissionEnergy(float energy) {
+        this.nEmissionEnergy = energy;
+    }
+
+    public float getNEmissionEnergy() {
+        return nEmissionEnergy;
     }
 
     public float getHalfLife() {
