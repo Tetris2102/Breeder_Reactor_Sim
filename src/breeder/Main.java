@@ -123,7 +123,7 @@ public class Main {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             // Create the main frame
-            JFrame frame = new JFrame("Breeder Reactor Simulator - Multi-Decay Spectrum");
+            JFrame frame = new JFrame("Breeder Reactor Simulator");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(1200, 800);
             
