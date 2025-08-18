@@ -16,6 +16,7 @@ public abstract class IsotopeLibrary {
     // Pu-238 natural decay isotopes
     public static final Isotope Pu238 = new Isotope("Pu-238", (short)238);
     public static final Isotope U234 = new Isotope("U-234", (short)234);
+
     // U-234 decay chain ...
     public static final DecayChain Pu238NDChain = new DecayChain("Pu-238 Natural Decay Chain");
     public static final Isotope[] Pu238NDIsotopeList = {Pu238, U234};

@@ -17,7 +17,13 @@ public class DecaySpectrumPlot extends JPanel {
     
     public void updateSpectrum(Map<Double, Double> newSpectrumData/*, Map<Isotope, Double[]> newSpectrumLines*/) {
         this.spectrumData.clear();
-        this.spectrumData.putAll(newSpectrumData);
+
+        Map<Double, Double> newSpectrumDatakeV = new HashMap<>();
+        for (var entry : newSpectrumData.entrySet()) {
+            double energy = entry.getKey();
+            newSpectrumDatakeV.put(energy * 1000 , entry.getValue());  // Convert MeV to keV
+        }
+        this.spectrumData.putAll(newSpectrumDatakeV);
         // this.spectrumLines.clear();
         // this.spectrumLines.putAll(newSpectrumLines);
         repaint(); // Trigger redraw
@@ -55,26 +61,8 @@ public class DecaySpectrumPlot extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(1.0f));
-        
-        if (spectrumData.isEmpty()/* || spectrumLines.isEmpty()*/) return;
 
-        // Find min/max for X and Y
-        // Dynamically
-        // double minX = Double.MAX_VALUE, maxX = -Double.MAX_VALUE;
-        // double maxY = -Double.MAX_VALUE;
-        // Or with fixed minimum values
-        double minX = 0.0, maxX = -Double.MAX_VALUE;
-        double maxY = 0.0;
-
-        for (var entry : spectrumData.entrySet()) {
-            double x = entry.getKey();
-            double y = entry.getValue();
-            if (x < minX) minX = x;
-            if (x > maxX) maxX = x;
-            if (y > maxY) maxY = y;
-        }
-
-        if (maxY <= 0) {
+        if (spectrumData.isEmpty()) {
             // Draw empty plot with minimum scale
             int w = getWidth();
             int h = getHeight();
@@ -94,6 +82,24 @@ public class DecaySpectrumPlot extends JPanel {
             int msgWidth = g2.getFontMetrics().stringWidth(noDataMsg);
             g2.drawString(noDataMsg, (w - msgWidth) / 2, h / 2);
             return;
+        }
+        
+        // if (spectrumData.isEmpty()/* || spectrumLines.isEmpty()*/) return;
+
+        // Find min/max for X and Y
+        // Dynamically
+        // double minX = Double.MAX_VALUE, maxX = -Double.MAX_VALUE;
+        // double maxY = -Double.MAX_VALUE;
+        // Or with fixed minimum values
+        double minX = 0.0, maxX = -Double.MAX_VALUE;
+        double maxY = 0.0;
+
+        for (var entry : spectrumData.entrySet()) {
+            double x = entry.getKey();
+            double y = entry.getValue();
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
         }
         
         // Smart scaling: Set a reasonable cap based on the energy distribution

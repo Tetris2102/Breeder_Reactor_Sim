@@ -1,11 +1,13 @@
 package breeder;
 
 import java.util.Map;
+import java.util.HashMap;
 
 public class Breeder {
     private final DecayChainNest fuel;
     private final NeutronSource neutronSource;
     private double neutronFlux; // Current neutron population in the reactor
+    private Map<Double, Double> neutronSpectrum;  // Map of energy, number of neutrons
     // private double alphaPopulation;   // Current alpha particle population from decays
     
     // Reactor physics parameters
@@ -25,6 +27,7 @@ public class Breeder {
         this.fuel = fuel;
         this.neutronSource = neutronSource;
         this.neutronFlux = Math.max(initialNeutrons, 0);
+        this.neutronSpectrum = new HashMap<>();
         this.neutronEscapeProbability = neutronEscapeProbability;
         // this.alphaEscapeProbability = alphaEscapeProbability;
         // this.alphaPopulation = 0;
@@ -55,6 +58,7 @@ public class Breeder {
         // Add new neutrons from the neutron source
         double newNeutrons = neutronSource.getNeutronRate() * timeStep;
         neutronFlux += newNeutrons;
+        neutronSpectrum.put((double)neutronSource.getNeutronEnergy(), newNeutrons);
         
         // Add alpha particles from alpha decays in fuel
         // double newAlphas = fuel.getActivityByDecay(DecayType.ALPHA) * timeStep;
@@ -67,6 +71,31 @@ public class Breeder {
         // Remove escaped alphas (exponential decay model)
         // double alphaEscapeLoss = alphaPopulation * alphaEscapeProbability * timeStep;
         // alphaPopulation = Math.max(0, alphaPopulation - alphaEscapeLoss);
+    }
+
+    /**
+     * Simulate reactor until given number of neutrons captured or time elapsed.
+     * Time limit prevents infinite loop if no neutrons are emitted.
+    */
+    public Map<Double, Double> getNeutronSpectrum(double countsToStop, double timeToStop, double timeStep) {
+        if (countsToStop <= 0 || timeToStop <= 0 || timeStep <= 0) return neutronSpectrum;
+
+        int i = 0;
+        double time = 0;
+        
+        int counts = neutronSpectrum.values().stream().mapToInt(Double::intValue).sum();
+        while (counts < countsToStop) {
+            simulateTimeStep(timeStep);
+            counts = neutronSpectrum.values().stream().mapToInt(Double::intValue).sum();
+            i++;
+            time += timeStep;
+
+            if (i > countsToStop || time > timeToStop) {
+                break;
+            }
+        }
+
+        return neutronSpectrum;
     }
 
     /**

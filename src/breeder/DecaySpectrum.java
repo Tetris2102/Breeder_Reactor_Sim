@@ -4,14 +4,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DecaySpectrum {
+    private final Breeder breeder;
     private final DecayChainNest fuel;
 
-    public DecaySpectrum(DecayChainNest fuel) {
-        this.fuel = fuel;
+    public DecaySpectrum(Breeder breeder) {
+        this.breeder = breeder;
+        this.fuel = breeder.getFuel();
     }
 
     public Map<Double, Double> captureDS(double time, DecayType decayType) {
-        return fuel.captureDS(time, decayType);
+        if (decayType != DecayType.NEUTRON) {
+            // If not neutrons, capture decay spectrum
+            return fuel.captureDS(time, decayType);
+        } else {
+            // If neutrons, capture neutron spectrum (currently excludes fission)
+            return breeder.getNeutronSpectrum(100, 10000, 0.1);
+        }
     }
 
     public Map<Isotope, Double[]> captureDSIMap(double time, DecayType decayType) {
@@ -44,7 +52,6 @@ public class DecaySpectrum {
         
         Map<Double, Double> broadenedSpectrum = new HashMap<>();
         
-        double minEnergy = spectrum.keySet().stream().min(Double::compare).orElse(0.0);
         double maxEnergy = spectrum.keySet().stream().max(Double::compare).orElse(3000.0);
         
         // Extend the energy range to show full Gaussian peaks (3 sigma on each side)
@@ -53,7 +60,7 @@ public class DecaySpectrum {
         double extendedMaxEnergy = maxEnergy + 3 * sigma;
         
         // Use a smaller energy step to properly sample the Gaussian function
-        for (double energy = extendedMinEnergy; energy <= extendedMaxEnergy; energy += 0.5) {
+        for (double energy = extendedMinEnergy; energy <= extendedMaxEnergy; energy += Math.min(sigma / 10, 0.03)) {
             double totalIntensity = 0.0;
             
             for (Map.Entry<Double, Double> entry : spectrum.entrySet()) {
@@ -82,7 +89,10 @@ public class DecaySpectrum {
         int totalCounts = 0;
 
         while (true) {
-            fuel.simulateDecay(timeStep);
+            if (decayType != DecayType.NEUTRON) {
+                fuel.simulateDecay(timeStep);
+            }
+            
             totalTime += timeStep;
 
             Map<Double, Double> spectrum = captureDS(timeStep, decayType);
@@ -108,7 +118,7 @@ public class DecaySpectrum {
             }
             
             // Safety check to prevent infinite loops
-            if (decayType != DecayType.GAMMA && totalTime > 10.0 && totalCounts < 10.0) {
+            if (totalTime > 10.0 && totalCounts < 10.0) {
                 break;
             }
         }

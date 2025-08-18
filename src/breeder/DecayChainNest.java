@@ -103,7 +103,7 @@ public class DecayChainNest {
         Map<Double, Double> spectrum = new HashMap<>();
         for (DecayChain dc : decayChains) {
             for (Isotope i : dc.getIsotopesByDecay(decayType)) {
-                double energy = i.getDecayEnergy() * 1000.0; // Convert MeV to keV
+                double energy = i.getDecayEnergy();
                 double decays = i.getActivityPerAtom() * dc.getIsotopeAtoms(i) * time;
                 // Add to existing value if energy already exists, otherwise put new value
                 spectrum.merge(energy, decays, Double::sum);
@@ -123,7 +123,7 @@ public class DecayChainNest {
         Map<Isotope, Double[]> spectrum = new HashMap<>();
         for (DecayChain dc : decayChains) {
             for (Isotope i : dc.getIsotopesByDecay(decayType)) {
-                double energy = i.getDecayEnergy() * 1000.0; // Convert MeV to keV
+                double energy = i.getDecayEnergy(); // MeV
                 double decays = i.getActivityPerAtom() * dc.getIsotopeAtoms(i) * time;
                 Double[] energyDecayArr = new Double[2];
                 energyDecayArr[0] = energy;
